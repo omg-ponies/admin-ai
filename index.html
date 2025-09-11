@@ -3,66 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin.ai</title>
+  <title>Admin.ai - Terminal</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --bg:#0b0c0e; --panel:#0a0d10; --line:#1b2025; --head:#0d1115; --mono:#cfe7e7; --muted:#7d8a96; --accent:#00ffff; --accent2:#00c6c7; --ok:#36d399;
+    }
+    html,body{height:100%}
     body {
       margin: 0;
       font-family: "IBM Plex Mono", monospace;
-      background: #0b0c0e;
-      color: #cfe7e7;
+      background: var(--bg);
+      color: var(--mono);
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
     }
     .hero-terminal {
-      background:#0a0d10;
-      border:1px solid #1b2025;
+      background:var(--panel);
+      border:1px solid var(--line);
       border-radius: 12px;
       overflow: hidden;
-      width: 90%;
-      max-width: 720px;
+      width: 92%;
+      max-width: 900px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
     }
-    .term-head {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-bottom:1px solid #151a1f;
-      background:#0d1115;
-    }
+    .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
     .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
-    .badge {
-      font-size: 11px;
-      color:#7d8a96;
-      border:1px solid #262c33;
-      padding:4px 8px;
-      border-radius:6px;
-      display:inline-block;
-    }
-    .term-body {
-      font-size: 14px;
-      padding: 14px 16px;
-    }
-    .prompt { color: #00c6c7; }
-    .caret { display:inline-block; width: 8px; height: 1.05em; background: #00ffff; vertical-align: -2px; animation: blink 1.1s steps(1) infinite; }
+    .badge { font-size: 11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
+    .term-body { font-size: 14px; padding: 14px 16px; white-space: pre-wrap; }
+    .row{ display:block; margin: 0 0 4px; }
+    .prompt { color: var(--accent2); }
+    .ok{ color: var(--ok); }
+    .caret { display:inline-block; width: 8px; height: 1.05em; background: var(--accent); vertical-align: -2px; animation: blink 1.1s steps(1) infinite; }
     @keyframes blink { 50% { opacity: 0; } }
+    .hint { position: fixed; bottom: 14px; color:#80919a; font-size:12px; opacity:.75 }
   </style>
 </head>
 <body>
-  <div class="hero-terminal">
+  <div class="hero-terminal" id="term">
     <div class="term-head">
       <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-      <span class="badge">/usr/local/admin/agents</span>
+      <span class="badge">/usr/local/admin/orchestrator</span>
     </div>
-    <div class="term-body" aria-label="terminal example">
-      <div><span class="prompt">$</span> assign agent: <b>prior-auth</b> &raquo; payer: <b>XYZ</b></div>
-      <div><span class="prompt">$</span> attach EHR: <b>Epic</b> via <b>FHIR</b> scope=read/write</div>
-      <div><span class="prompt">$</span> start run &nbsp;|&nbsp; <span style="color:#9be7ff">throughput</span>: 120 req/min</div>
-      <div><span class="prompt">$</span> status &nbsp;|&nbsp; <span style="color:#36d399">ok</span> &nbsp;errors: 0.02% &nbsp;SLA: 99.95%</div>
-      <div><span class="prompt">$</span> _<span class="caret"></span></div>
-    </div>
+    <div class="term-body" id="out" aria-label="terminal example"></div>
   </div>
+  <div class="hint">click to replay</div>
+
+  <script>
+    const out = document.getElementById('out');
+
+    // --- helpers ---
+    const rnd = (min,max)=> Math.floor(Math.random()*(max-min+1))+min;
+    const pick = arr => arr[rnd(0,arr.length-1)];
+    const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,n);
+
+    const ICD10 = [
+      'R07.9','E11.9','I10','J45.909','F32.9','M54.5','Z00.00','Z20.822','K21.9','N39.0'
+    ];
+
+    const AGENTS = [
+      {k:'clinician',  cmd:(sid)=>[`$ clinician/${sid} session PID:${rnd(80000,99999)}`, `ICD-10:${pick(ICD10)} eval • context fused • draft note`]},
+      {k:'admin',      cmd:(sid)=>[`$ admin/${sid} auth-req ID:${rnd(10000,99999)}`, `id validated • channel secure • log appended`]},
+      {k:'quality',    cmd:(sid)=>[`$ quality/${sid} audit traceID:${hex(5)}`, `metrics streaming • deviation <${(Math.random()*0.5+0.05).toFixed(2)}%`]},
+      {k:'rcm',        cmd:(sid)=>{const code=pick(ICD10);return[`$ rcm/${sid} claim ICD-10:${code} → payer:ID${rnd(10,99)}`, `FHIR tx submitted • ack ${rnd(40,95)}ms • remittance pending`] }},
+      {k:'analytics',  cmd:(sid)=>[`$ analytics/${sid} cohort Q${rnd(1,4)}`, `de-id set • signals extracted • viz ready`]},
+      {k:'rx',         cmd:(sid)=>{const code=pick(ICD10);return[`$ rx/${sid} prescribe ${code}`, `e-script draft • safety checks • coverage ok`] }},
+      {k:'intake',     cmd:(sid)=>[`$ intake/${sid} route PID:${rnd(80000,99999)}`, `elig checked • triage token issued`]},
+      {k:'triage',     cmd:(sid)=>[`$ triage/${sid} ICD-10?`, `ranked list • risk=${(Math.random()*0.01+0.002).toFixed(3)} • evidence linked`]}
+    ];
+
+    function genRun(){
+      // choose a random subset of agents
+      const pool = [...AGENTS];
+      const count = rnd(5,8);
+      const chosen = [];
+      while(chosen.length < count){ const i = rnd(0,pool.length-1); chosen.push(pool.splice(i,1)[0]); }
+
+      const names = chosen.map(a=>a.k).join(' • ');
+      const events = [];
+      // boot + online lines
+      events.push({t:`$ orchestrator boot --agents ${count}`, p:true});
+      events.push({t:`online: ${names}`, p:false});
+
+      // build interleaved logs
+      chosen.forEach(a=>{
+        const sid = String(rnd(1,29)).padStart(2,'0');
+        const [cmd, resp] = a.cmd(sid);
+        events.push({t:cmd, p:true});
+        events.push({t:resp, p:false});
+      });
+
+      // randomize interleave of the middle chunk (keep first two, keep status last)
+      const head = events.slice(0,2);
+      const middle = events.slice(2);
+      for(let i=middle.length-1;i>0;i--){ const j=rnd(0,i); [middle[i],middle[j]] = [middle[j],middle[i]]; }
+
+      // cluster status
+      const latency = rnd(70,140);
+      const err = (Math.random()*0.02+0.001).toFixed(2);
+      const sla = (99.90 + Math.random()*0.09).toFixed(2);
+      const tail = [
+        {t:'$ status cluster', p:true},
+        {t:`agents:${count} • latency <${latency}ms • err:${err}% • SLA>${sla}%`, p:false, cls:'ok'},
+        {t:'$', p:true, hold:true}
+      ];
+
+      return [...head, ...middle, ...tail];
+    }
+
+    // typing engine
+    let speed = rnd(9,16);     // ms per char (slight variation each run)
+    let gap = rnd(180,320);    // pause between lines
+
+    function span(cls){ const s=document.createElement('span'); if(cls) s.className=cls; return s; }
+
+    function printLine(text, isPrompt, extraClass){
+      const row = document.createElement('div'); row.className = 'row';
+      if(isPrompt){ row.appendChild(span('prompt')).textContent = '$ '; }
+      const content = document.createElement('span'); if(extraClass) content.className = extraClass; row.appendChild(content);
+      out.appendChild(row);
+      return new Promise(resolve=>{
+        let i=0; const tick = ()=>{
+          if(i < text.length){ content.textContent += text.charAt(i++); setTimeout(tick, speed); }
+          else resolve();
+        }; tick();
+      });
+    }
+
+    async function run(){
+      out.innerHTML = '';
+      speed = rnd(9,16); gap = rnd(180,320);
+      const lines = genRun();
+      for(const line of lines){
+        await printLine(line.t, line.p, line.cls);
+        if(line.hold){ const c = document.createElement('span'); c.className = 'caret'; out.lastChild.appendChild(c); return; }
+        await new Promise(r=>setTimeout(r,gap));
+      }
+    }
+
+    run();
+    document.body.addEventListener('click', run);
+  </script>
 </body>
 </html>
