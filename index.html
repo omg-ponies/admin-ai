@@ -3,37 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin.ai</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
   <style>
     body {
-      font-size: 20px;
+      font-family: system-ui, sans-serif;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      background: #111;
+      color: #f5f5f5;
       cursor: pointer;
       user-select: none;
+      margin: 0;
     }
+    #message {
+      font-size: 20px;
+      transition: font-size 120ms ease, transform 120ms ease;
+    }
+    .pop { transform: scale(1.05); }
   </style>
 </head>
 <body>
   <span id="message">Hello world 👋</span>
 
   <script>
-    const message = document.getElementById('message');
+    const message = document.getElementById("message");
     let fontSize = 20;
 
-    const emojis = ["😀", "😎", "🚀", "🔥", "🤖", "🌍", "⚡", "🐉", "👾", "🍀", "🦄", "🎉", "💡", "🌞", "🧩"];
+    // Emoji ranges (covers most standard emojis)
+    const ranges = [
+      [0x1F300, 0x1F5FF], // Misc Symbols & Pictographs
+      [0x1F600, 0x1F64F], // Emoticons
+      [0x1F680, 0x1F6FF], // Transport & Map
+      [0x1F700, 0x1F77F], // Alchemical
+      [0x1F780, 0x1F7FF], // Geometric
+      [0x1F800, 0x1F9FF], // Supplemental Symbols & Pictographs
+      [0x1FA00, 0x1FAFF]  // Extended
+    ];
 
-    function getRandomEmoji() {
-      return emojis[Math.floor(Math.random() * emojis.length)];
+    function randomEmoji() {
+      const [start, end] = ranges[Math.floor(Math.random() * ranges.length)];
+      return String.fromCodePoint(
+        Math.floor(Math.random() * (end - start)) + start
+      );
     }
 
-    message.addEventListener('click', () => {
+    function swapLastEmoji(text, emoji) {
+      const parts = text.trimEnd().split(" ");
+      parts[parts.length - 1] = emoji;
+      return parts.join(" ");
+    }
+
+    function pop() {
+      message.classList.add("pop");
+      setTimeout(() => message.classList.remove("pop"), 120);
+    }
+
+    // Click anywhere on the page
+    document.addEventListener("click", () => {
       fontSize += 5;
       message.style.fontSize = fontSize + "px";
-
-      // Replace last character if it’s an emoji, otherwise add one
-      let text = message.textContent;
-      let parts = text.split(" ");
-      parts[parts.length - 1] = getRandomEmoji();
-      message.textContent = parts.join(" ");
+      message.textContent = swapLastEmoji(message.textContent, randomEmoji());
+      pop();
     });
   </script>
 </body>
