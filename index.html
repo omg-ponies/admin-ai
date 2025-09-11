@@ -11,11 +11,11 @@
     }
     html,body{height:100%}
     body { margin:0; font-family:"IBM Plex Mono", monospace; background:var(--bg); color:var(--mono); display:flex; align-items:center; justify-content:center; min-height:100vh; }
-    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:1000px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:1040px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
     .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
     .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
     .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
-    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:360px; overflow-y:auto; }
+    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:420px; overflow-y:auto; }
     .row{ display:flex; gap:8px; align-items:baseline; margin:0 0 4px; }
     .ts{ color:#80919a; opacity:.85; font-size:12px; }
     .prompt{ color:var(--accent2); }
@@ -49,7 +49,7 @@
       {k:'chat',  open: sid=>`$ channel/open chat  SID:${sid}`, ready:'nlp on • live'}
     ];
 
-    // Expanded ICD-10 set
+    // Expanded ICD-10 set (diagnosis only - shown as plain codes)
     const ICD10 = [
       'R07.9','E11.9','I10','J45.909','F32.9','M54.5','Z00.00','Z20.822','K21.9','N39.0',
       'J06.9','J18.9','E78.5','E03.9','E66.9','F41.9','G47.00','K52.9','K59.00','N30.00',
@@ -59,73 +59,55 @@
       'Z79.899','Z13.1','Z13.220','Z68.30','Z71.3'
     ];
 
-    // Clinical intents per code
+    // ICHI-like action codes (placeholders shaped like ICHI; no descriptions – insiders will parse)
+    const ICHI_POOL = [
+      'AB10.YS','QC50.AN','DA10.AN','FB20.ZZ','GB30.XR','HB15.CT','JA12.MM','KB40.US',
+      'LA22.PT','MA11.CB','NA31.RX','PA45.LB','QA60.OB','RA05.EV','SA70.SC','TA80.OP',
+      'UA12.VS','VA33.EN','WA90.FU','XA55.CS','YA10.ED'
+    ];
+
+    // Map some Dx → likely ICHI bundles
     const CODEBOOK = {
-      'J45.909': {med:'albuterol inhaler', tests:'peak flow if available', orders:'SABA + spacer • action plan'},
-      'E11.9':   {med:'metformin', tests:'A1c • microalbumin • lipid panel', orders:'foot exam • lifestyle'},
-      'I10':     {med:'lisinopril', tests:'BMP • home BP logs', orders:'BP targets set'},
-      'R07.9':   {tests:'ECG • troponin • CXR as indicated', orders:'HEART risk stratification'},
-      'N39.0':   {med:'nitrofurantoin', tests:'UA + culture', orders:'hydration • return if fever'},
-      'K21.9':   {med:'omeprazole', orders:'PPI trial • trigger avoidance'},
-      'M54.5':   {med:'NSAID', tests:'no imaging unless red flags', orders:'PT referral • activity'},
-      'F32.9':   {tests:'PHQ-9', med:'SSRI (consider)', orders:'safety plan • follow‑up'},
-      'Z20.822': {tests:'SARS‑CoV‑2 NAAT/Ag', orders:'isolation guidance'},
-      'Z00.00':  {tests:'preventive labs', orders:'immunization review'},
-      'J06.9':   {orders:'symptomatic care • no abx'},
-      'J18.9':   {tests:'CXR', med:'amoxicillin/clavulanate (adult CAP)'},
-      'E78.5':   {med:'atorvastatin', tests:'lipid panel • LFTs'},
-      'E03.9':   {med:'levothyroxine', tests:'TSH in 6–8 wks'},
-      'E66.9':   {orders:'weight mgmt • nutrition referral'},
-      'F41.9':   {med:'SSRI (consider)', orders:'CBT referral'},
-      'G47.00':  {orders:'sleep hygiene', tests:'sleep study if indicated'},
-      'K52.9':   {orders:'rehydration • BRAT', tests:'stool studies if red flags'},
-      'K59.00':  {orders:'fiber • osmotic laxative'},
-      'N30.00':  {med:'nitrofurantoin', tests:'UA'},
-      'N76.0':   {tests:'wet mount', med:'metronidazole if BV'},
-      'Z23':     {orders:'immunizations updated'},
-      'Z12.11':  {orders:'CRC screening order (FIT/colonoscopy)'},
-      'Z12.31':  {orders:'mammography order'},
-      'J20.9':   {orders:'bronchodilator PRN • no routine abx'},
-      'J02.9':   {tests:'strep test'},
-      'R51':     {orders:'analgesia', tests:'neuro exam'},
-      'R42':     {tests:'orthostatic vitals', orders:'Epley if BPPV suspected'},
-      'S93.4':   {orders:'RICE • brace'},
-      'T14.8':   {orders:'wound care • tetanus update'},
-      'H66.90':  {med:'amoxicillin'},
-      'L03.90':  {med:'cephalexin', orders:'mark borders • elevate'},
-      'K64.9':   {orders:'topicals • fiber'},
-      'K60.2':   {orders:'sitz baths • topical anesthetic'},
-      'G40.909': {tests:'drug levels • EEG if needed', med:'antiseizure med adherence'},
-      'I48.91':  {tests:'ECG • CHA2DS2‑VASc', med:'anticoagulation if indicated'},
-      'I21.9':   {tests:'emergent transfer • troponin • ECG', orders:'ACS protocol'},
-      'R50.9':   {orders:'antipyretics • hydration'},
-      'R11.2':   {orders:'antiemetic • PO challenge'},
-      'J00':     {orders:'supportive care'},
-      'J03.90':  {orders:'analgesia • consider strep test'},
-      'K35.80':  {tests:'surgical eval • NPO', orders:'appendicitis pathway'},
-      'K85.90':  {tests:'lipase • US • admit if severe'},
-      'K80.20':  {tests:'RUQ US', orders:'surgery referral if indicated'},
-      'N20.0':   {tests:'UA • CT if needed', orders:'tamsulosin • fluids'},
-      'N92.0':   {orders:'NSAIDs • iron check'},
-      'Z79.01':  {orders:'anticoagulant monitoring'},
-      'Z79.4':   {orders:'insulin regimen review'},
-      'Z79.899': {orders:'medication reconciliation'},
-      'Z13.1':   {orders:'diabetes screening (A1c)'},
-      'Z13.220': {orders:'lipid screening'},
-      'Z68.30':  {orders:'BMI counseling'},
-      'Z71.3':   {orders:'dietary counseling'}
+      'J45.909': ['NA31.RX','WA90.FU'],
+      'E11.9':   ['PA45.LB','WA90.FU'],
+      'I10':     ['QA60.OB','WA90.FU'],
+      'R07.9':   ['HB15.CT','RA05.EV'],
+      'N39.0':   ['PA45.LB','NA31.RX'],
+      'K21.9':   ['RA05.EV'],
+      'M54.5':   ['LA22.PT'],
+      'F32.9':   ['QA60.OB','WA90.FU'],
+      'Z20.822': ['PA45.LB','WA90.FU'],
+      'Z00.00':  ['QA60.OB','PA45.LB'],
+      'J18.9':   ['KB40.US','NA31.RX'],
+      'E78.5':   ['PA45.LB','WA90.FU'],
+      'E03.9':   ['PA45.LB','WA90.FU'],
+      'J20.9':   ['RA05.EV','WA90.FU'],
+      'J02.9':   ['PA45.LB'],
+      'R42':     ['QA60.OB'],
+      'S93.4':   ['SA70.SC'],
+      'T14.8':   ['TA80.OP'],
+      'H66.90':  ['NA31.RX'],
+      'L03.90':  ['NA31.RX','SA70.SC'],
+      'K35.80':  ['TA80.OP'],
+      'K85.90':  ['PA45.LB'],
+      'K80.20':  ['KB40.US','TA80.OP'],
+      'N20.0':   ['PA45.LB','NA31.RX'],
+      'I48.91':  ['QA60.OB'],
+      'I21.9':   ['HB15.CT','RA05.EV']
     };
 
-    const planFor = code => {
-      const p = CODEBOOK[code] || {orders:'workup per guideline'};
-      const parts = [];
-      if(p.tests) parts.push(p.tests);
-      if(p.orders) parts.push(p.orders);
-      return parts.join(' • ');
-    };
-    const rxFor = code => (CODEBOOK[code] && CODEBOOK[code].med) ? CODEBOOK[code].med : null;
+    function actionsFor(code){
+      const bundle = CODEBOOK[code] || [pick(ICHI_POOL), pick(ICHI_POOL)];
+      const uniq = [...new Set(bundle)];
+      return uniq.join(' ');
+    }
 
-    // Build one end-to-end session consistent with the architecture
+    function rxIdsFor(code){
+      const rxDx = ['J45.909','N39.0','J18.9','H66.90','L03.90','E11.9','I10'];
+      if(!rxDx.includes(code)) return null;
+      return { product:`RX-${hex(4)}`, dose:`DOSE-${hex(3)}` };
+    }
+
     function buildSession(idx){
       const sid = String(idx).padStart(2,'0');
       const pid = rnd(80000,99999);
@@ -134,63 +116,71 @@
       const mode = pick(MODES);
       const code = pick(ICD10);
       const alt = pick(ICD10.filter(c=>c!==code));
-      const med = rxFor(code);
+      const rx = rxIdsFor(code);
 
       const ev = [];
-      // Channel level (patient interaction)
       ev.push({t:mode.open(sid), p:true});
       ev.push({t:mode.ready, p:false});
+      ev.push({t:`$ context/patient merge PID:${pid}`, p:true});
+      ev.push({t:`signals fused • longitudinal hx available`, p:false});
+      ev.push({t:`$ context/healthcare load policy-set clinical+ops`, p:true});
+      ev.push({t:`guidelines loaded • org rules active`, p:false});
 
-      // Orchestrator assigns agents for this session (many per type allowed)
-      const cln = `clinician/${rnd(1,48)}`;
-      const adm = `admin/${rnd(1,48)}`;
-      const qa  = `quality/${rnd(1,48)}`;
-      const rxc = `rx/${rnd(1,48)}`;
-      const rcm = `rcm/${rnd(1,48)}`;
-      const tri = `triage/${rnd(1,48)}`;
+      const cln = `clinician/${rnd(1,96)}`;
+      const adm = `admin/${rnd(1,96)}`;
+      const qa  = `quality/${rnd(1,96)}`;
+      const rxc = `rx/${rnd(1,96)}`;
+      const rcm = `rcm/${rnd(1,96)}`;
+      const tri = `triage/${rnd(1,96)}`;
       ev.push({t:`$ orchestrator spawn ${cln} ${adm} ${qa} ${rxc} ${rcm} ${tri} PID:${pid}`, p:true});
-      ev.push({t:`agents ready • context fused (patient+healthcare models)`, p:false});
+      ev.push({t:`agents ready • shared-context pinned`, p:false});
 
-      // Triage → Clinician decision
       ev.push({t:`$ ${tri} rank`, p:true});
       ev.push({t:`candidates: ${code} > ${alt}`, p:false});
-      ev.push({t:`$ ${cln} finalize ICD-10:${code}`, p:true});
-      ev.push({t:`plan • ${planFor(code)}`, p:false});
+      ev.push({t:`$ ${cln} finalize ${code}`, p:true});
+      ev.push({t:`actions • ${actionsFor(code)}`, p:false});
 
-      // Quality must QA all clinical decisions
       ev.push({t:`$ ${qa} QA diag PID:${pid}`, p:true});
-      ev.push({t:`ICD-10:${code} • rationale ok`, p:false, cls:'ok'});
+      ev.push({t:`code ${code} • rationale ok`, p:false, cls:'ok'});
 
-      // Rx if clinically appropriate
-      if(med){
-        ev.push({t:`$ ${rxc} e-script ${med}`, p:true});
+      if(rx){
+        ev.push({t:`$ ${rxc} e-script ${rx.product} ${rx.dose}`, p:true});
         ev.push({t:`checks: interactions • allergies • formulary`, p:false});
         ev.push({t:`$ ${qa} QA rx PID:${pid}`, p:true});
         ev.push({t:`med ok • guardrails pass`, p:false, cls:'ok'});
       }
 
-      // Admin handles EMR entries, notes, coding
-      ev.push({t:`$ ${adm} commit EHR:ID${ehr}`, p:true});
-      ev.push({t:`note+orders coded • ICD-10:${code} • audit appended`, p:false});
-      ev.push({t:`$ integration/FHIR gw`, p:true});
-      ev.push({t:`write: Observation/ServiceRequest${med?'/MedicationRequest':''} • auth ok`, p:false});
+      const jid1 = `jid-${hex(6)}`;
+      ev.push({t:`$ automation/queue ${jid1} target:EHR:ID${ehr} op:commit`, p:true});
+      ev.push({t:`queued • wait`, p:false});
+      if(Math.random() < 0.35){ ev.push({t:`${jid1} upstream latency ${rnd(1200,3900)}ms`, p:false, cls:'warn'}); }
+      if(Math.random() < 0.25){ ev.push({t:`${jid1} retry(1) backoff 2s`, p:false, cls:'warn'}); }
+      ev.push({t:`${jid1} run • write Note+Orders • code ${code}`, p:false});
+      ev.push({t:`integration/api 200 • audit appended`, p:false});
+      ev.push({t:`$ ${qa} QA commit PID:${pid}`, p:true});
+      ev.push({t:`commit ok`, p:false, cls:'ok'});
 
-      // Reimbursement
-      ev.push({t:`$ ${rcm} claim PID:${pid} ICD-10:${code} → payer:ID${payer}`, p:true});
-      ev.push({t:`submitted • ack ${rnd(40,95)}ms • ERA pending`, p:false});
+      const jid2 = `jid-${hex(6)}`;
+      ev.push({t:`$ automation/queue ${jid2} target:PAYER:ID${payer} op:claim`, p:true});
+      if(Math.random() < 0.3){ ev.push({t:`${jid2} upstream latency ${rnd(800,4200)}ms`, p:false, cls:'warn'}); }
+      ev.push({t:`${jid2} run • code ${code} • attach ERA hook`, p:false});
+      if(Math.random() < 0.18){
+        ev.push({t:`${jid2} timeout • requeue`, p:false, cls:'warn'});
+        ev.push({t:`${jid2} run • retry ok`, p:false});
+      }
+      ev.push({t:`ack ${rnd(40,95)}ms • status pending`, p:false});
 
       return ev;
     }
 
     function genRun(){
-      const sessions = rnd(3,6); // multiple concurrent consults
+      const sessions = rnd(4,8);
       const ev = [];
       ev.push({t:`$ orchestrator boot --sessions ${sessions}`, p:true});
-      ev.push({t:`cluster online • vendor-agnostic • mixed-model`, p:false});
+      ev.push({t:`cluster online • patient channels: voice • video • chat`, p:false});
 
       for(let i=1;i<=sessions;i++) ev.push(...buildSession(i));
 
-      // Shuffle middle to feel concurrent but keep first two lines and final status
       const head = ev.slice(0,2);
       const middle = ev.slice(2);
       for(let i=middle.length-1;i>0;i--){ const j=rnd(0,i); [middle[i],middle[j]]=[middle[j],middle[i]]; }
@@ -207,7 +197,6 @@
       return [...head, ...middle, ...tail];
     }
 
-    // typing engine (runs only on load)
     const speed = rnd(9,16);
     const gap = rnd(180,320);
     const MAX_ROWS = 15;
@@ -226,14 +215,13 @@
       const content = document.createElement('span'); if(extraClass) content.className = extraClass; row.appendChild(content);
       out.appendChild(row);
 
-      // Enforce max rows with scrolling visual
       while(out.children.length > MAX_ROWS){ out.removeChild(out.firstChild); }
       out.scrollTop = out.scrollHeight;
 
       return new Promise(resolve=>{ let i=0; const tick=()=>{ if(i<text.length){ content.textContent += text.charAt(i++); setTimeout(tick, speed); } else resolve(); }; tick(); });
     }
 
-    (async function run(){
+    async function run(){
       out.innerHTML = '';
       const lines = genRun();
       for(const line of lines){
@@ -241,7 +229,16 @@
         if(line.hold){ const c=document.createElement('span'); c.className='caret'; out.lastChild.appendChild(c); out.scrollTop = out.scrollHeight; return; }
         await new Promise(r=>setTimeout(r,gap));
       }
-    })();
+    }
+
+    run();
+
+    // rerun when Enter is pressed
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        run();
+      }
+    });
   </script>
 </body>
 </html>
