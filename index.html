@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin.ai - Terminal</title>
+  <title>Admin.ai</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -26,7 +26,7 @@
       border-radius: 12px;
       overflow: hidden;
       width: 92%;
-      max-width: 900px;
+      max-width: 980px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.35);
     }
     .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
@@ -38,7 +38,6 @@
     .ok{ color: var(--ok); }
     .caret { display:inline-block; width: 8px; height: 1.05em; background: var(--accent); vertical-align: -2px; animation: blink 1.1s steps(1) infinite; }
     @keyframes blink { 50% { opacity: 0; } }
-    .hint { position: fixed; bottom: 14px; color:#80919a; font-size:12px; opacity:.75 }
   </style>
 </head>
 <body>
@@ -49,7 +48,6 @@
     </div>
     <div class="term-body" id="out" aria-label="terminal example"></div>
   </div>
-  <div class="hint">click to replay</div>
 
   <script>
     const out = document.getElementById('out');
@@ -59,19 +57,95 @@
     const pick = arr => arr[rnd(0,arr.length-1)];
     const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,n);
 
+    // Expanded ICD-10 set (common, sensible in primary/urgent/RCM)
     const ICD10 = [
-      'R07.9','E11.9','I10','J45.909','F32.9','M54.5','Z00.00','Z20.822','K21.9','N39.0'
+      'R07.9','E11.9','I10','J45.909','F32.9','M54.5','Z00.00','Z20.822','K21.9','N39.0',
+      'J06.9','J18.9','E78.5','E03.9','E66.9','F41.9','G47.00','K52.9','K59.00','N30.00',
+      'N76.0','Z23','Z12.11','Z12.31','J20.9','J02.9','R51','R42','S93.4','T14.8',
+      'H66.90','L03.90','J30.9','J31.0','K64.9','K60.2','G40.909','I48.91','I21.9','R50.9',
+      'R11.2','J00','J03.90','K35.80','K85.90','K80.20','N20.0','N92.0','Z79.01','Z79.4',
+      'Z79.899','Z13.1','Z13.220','Z68.30','Z71.3'
     ];
 
+    // Clinically-aligned actions per code (fallback to generic guideline if absent)
+    const CODEBOOK = {
+      'J45.909': {med:'albuterol inhaler', tests:'peak flow if available', orders:'SABA + spacer • action plan'},
+      'E11.9':   {med:'metformin', tests:'A1c • microalbumin • lipid panel', orders:'foot exam • lifestyle'},
+      'I10':     {med:'lisinopril', tests:'BMP • home BP logs', orders:'BP targets set'},
+      'R07.9':   {tests:'ECG • troponin • CXR as indicated', orders:'HEART risk stratification'},
+      'N39.0':   {med:'nitrofurantoin', tests:'UA + culture', orders:'hydration • return if fever'},
+      'K21.9':   {med:'omeprazole', orders:'PPI trial • trigger avoidance'},
+      'M54.5':   {med:'NSAID', tests:'no imaging unless red flags', orders:'PT referral • activity'},
+      'F32.9':   {tests:'PHQ-9', med:'SSRI (consider)', orders:'safety plan • follow‑up'},
+      'Z20.822': {tests:'SARS‑CoV‑2 NAAT/Ag', orders:'isolation guidance'},
+      'Z00.00':  {tests:'preventive labs', orders:'immunization review'},
+      'J06.9':   {orders:'symptomatic care • no abx'},
+      'J18.9':   {tests:'CXR', med:'amoxicillin/clavulanate (adult CAP)'},
+      'E78.5':   {med:'atorvastatin', tests:'lipid panel • LFTs'},
+      'E03.9':   {med:'levothyroxine', tests:'TSH in 6–8 wks'},
+      'E66.9':   {orders:'weight mgmt • nutrition referral'},
+      'F41.9':   {med:'SSRI (consider)', orders:'CBT referral'},
+      'G47.00':  {orders:'sleep hygiene', tests:'sleep study if indicated'},
+      'K52.9':   {orders:'rehydration • BRAT', tests:'stool studies if red flags'},
+      'K59.00':  {orders:'fiber • osmotic laxative'},
+      'N30.00':  {med:'nitrofurantoin', tests:'UA'},
+      'N76.0':   {tests:'wet mount', med:'metronidazole if BV'},
+      'Z23':     {orders:'immunizations updated'},
+      'Z12.11':  {orders:'CRC screening order (FIT/colonoscopy)'},
+      'Z12.31':  {orders:'mammography order'},
+      'J20.9':   {orders:'bronchodilator PRN • no routine abx'},
+      'J02.9':   {tests:'strep test'},
+      'R51':     {orders:'analgesia', tests:'neuro exam'},
+      'R42':     {tests:'orthostatic vitals', orders:'Epley if BPPV suspected'},
+      'S93.4':   {orders:'RICE • brace'},
+      'T14.8':   {orders:'wound care • tetanus update'},
+      'H66.90':  {med:'amoxicillin'},
+      'L03.90':  {med:'cephalexin', orders:'mark borders • elevate'},
+      'K64.9':   {orders:'topicals • fiber'},
+      'K60.2':   {orders:'sitz baths • topical anesthetic'},
+      'G40.909': {tests:'drug levels • EEG if needed', med:'antiseizure med adherence'},
+      'I48.91':  {tests:'ECG • CHA2DS2‑VASc', med:'anticoagulation if indicated'},
+      'I21.9':   {tests:'emergent transfer • troponin • ECG', orders:'ACS protocol'},
+      'R50.9':   {orders:'antipyretics • hydration'},
+      'R11.2':   {orders:'antiemetic • PO challenge'},
+      'J00':     {orders:'supportive care'},
+      'J03.90':  {orders:'analgesia • consider strep test'},
+      'K35.80':  {tests:'surgical eval • NPO', orders:'appendicitis pathway'},
+      'K85.90':  {tests:'lipase • US • admit if severe'},
+      'K80.20':  {tests:'RUQ US', orders:'surgery referral if indicated'},
+      'N20.0':   {tests:'UA • CT if needed', orders:'tamsulosin • fluids'},
+      'N92.0':   {orders:'NSAIDs • iron check'},
+      'Z79.01':  {orders:'anticoagulant monitoring'},
+      'Z79.4':   {orders:'insulin regimen review'},
+      'Z79.899': {orders:'medication reconciliation'},
+      'Z13.1':   {orders:'diabetes screening (A1c)'},
+      'Z13.220': {orders:'lipid screening'},
+      'Z68.30':  {orders:'BMI counseling'},
+      'Z71.3':   {orders:'dietary counseling'}
+    };
+
+    function planFor(code){
+      const p = CODEBOOK[code] || {orders:'workup per guideline'};
+      const parts = [];
+      if(p.tests) parts.push(p.tests);
+      if(p.orders) parts.push(p.orders);
+      return parts.join(' • ');
+    }
+
+    function rxFor(code){
+      const p = CODEBOOK[code];
+      return p && p.med ? p.med : 'meds per protocol';
+    }
+
     const AGENTS = [
-      {k:'clinician',  cmd:(sid)=>[`$ clinician/${sid} session PID:${rnd(80000,99999)}`, `ICD-10:${pick(ICD10)} eval • context fused • draft note`]},
+      {k:'clinician',  cmd:(sid)=>{const code=pick(ICD10);return [`$ clinician/${sid} session PID:${rnd(80000,99999)}`, `ICD-10:${code} • ${planFor(code)}`];}},
       {k:'admin',      cmd:(sid)=>[`$ admin/${sid} auth-req ID:${rnd(10000,99999)}`, `id validated • channel secure • log appended`]},
       {k:'quality',    cmd:(sid)=>[`$ quality/${sid} audit traceID:${hex(5)}`, `metrics streaming • deviation <${(Math.random()*0.5+0.05).toFixed(2)}%`]},
       {k:'rcm',        cmd:(sid)=>{const code=pick(ICD10);return[`$ rcm/${sid} claim ICD-10:${code} → payer:ID${rnd(10,99)}`, `FHIR tx submitted • ack ${rnd(40,95)}ms • remittance pending`] }},
       {k:'analytics',  cmd:(sid)=>[`$ analytics/${sid} cohort Q${rnd(1,4)}`, `de-id set • signals extracted • viz ready`]},
-      {k:'rx',         cmd:(sid)=>{const code=pick(ICD10);return[`$ rx/${sid} prescribe ${code}`, `e-script draft • safety checks • coverage ok`] }},
+      {k:'rx',         cmd:(sid)=>{const code=pick(ICD10);return[`$ rx/${sid} prescribe ${code}`, `e-script draft • ${rxFor(code)} • safety checks`] }},
       {k:'intake',     cmd:(sid)=>[`$ intake/${sid} route PID:${rnd(80000,99999)}`, `elig checked • triage token issued`]},
-      {k:'triage',     cmd:(sid)=>[`$ triage/${sid} ICD-10?`, `ranked list • risk=${(Math.random()*0.01+0.002).toFixed(3)} • evidence linked`]}
+      {k:'triage',     cmd:(sid)=>{const code=pick(ICD10);return[`$ triage/${sid} ICD-10?`, `ranked: ${code} • risk=${(Math.random()*0.01+0.002).toFixed(3)} • evidence linked`]}}
     ];
 
     function genRun(){
@@ -95,7 +169,7 @@
         events.push({t:resp, p:false});
       });
 
-      // randomize interleave of the middle chunk (keep first two, keep status last)
+      // shuffle middle
       const head = events.slice(0,2);
       const middle = events.slice(2);
       for(let i=middle.length-1;i>0;i--){ const j=rnd(0,i); [middle[i],middle[j]] = [middle[j],middle[i]]; }
@@ -113,9 +187,9 @@
       return [...head, ...middle, ...tail];
     }
 
-    // typing engine
-    let speed = rnd(9,16);     // ms per char (slight variation each run)
-    let gap = rnd(180,320);    // pause between lines
+    // typing engine (runs only on load)
+    const speed = rnd(9,16);     // ms per char
+    const gap = rnd(180,320);    // pause between lines
 
     function span(cls){ const s=document.createElement('span'); if(cls) s.className=cls; return s; }
 
@@ -132,19 +206,15 @@
       });
     }
 
-    async function run(){
+    (async function run(){
       out.innerHTML = '';
-      speed = rnd(9,16); gap = rnd(180,320);
       const lines = genRun();
       for(const line of lines){
         await printLine(line.t, line.p, line.cls);
         if(line.hold){ const c = document.createElement('span'); c.className = 'caret'; out.lastChild.appendChild(c); return; }
         await new Promise(r=>setTimeout(r,gap));
       }
-    }
-
-    run();
-    document.body.addEventListener('click', run);
+    })();
   </script>
 </body>
 </html>
