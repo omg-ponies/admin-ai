@@ -15,8 +15,9 @@
     .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
     .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
     .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
-    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; }
-    .row{ display:block; margin:0 0 4px; }
+    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:360px; overflow-y:auto; }
+    .row{ display:flex; gap:8px; align-items:baseline; margin:0 0 4px; }
+    .ts{ color:#80919a; opacity:.85; font-size:12px; }
     .prompt{ color:var(--accent2); }
     .ok{ color:var(--ok); }
     .warn{ color:var(--warn); }
@@ -209,13 +210,26 @@
     // typing engine (runs only on load)
     const speed = rnd(9,16);
     const gap = rnd(180,320);
+    const MAX_ROWS = 15;
+
+    function pad(n, w=2){ return String(n).padStart(w,'0'); }
+    function ts(){
+      const d = new Date();
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
+    }
 
     function span(cls){ const s=document.createElement('span'); if(cls) s.className=cls; return s; }
     function printLine(text, isPrompt, extraClass){
       const row = document.createElement('div'); row.className = 'row';
+      row.appendChild(span('ts')).textContent = ts();
       if(isPrompt){ row.appendChild(span('prompt')).textContent = '$ '; }
       const content = document.createElement('span'); if(extraClass) content.className = extraClass; row.appendChild(content);
       out.appendChild(row);
+
+      // Enforce max rows with scrolling visual
+      while(out.children.length > MAX_ROWS){ out.removeChild(out.firstChild); }
+      out.scrollTop = out.scrollHeight;
+
       return new Promise(resolve=>{ let i=0; const tick=()=>{ if(i<text.length){ content.textContent += text.charAt(i++); setTimeout(tick, speed); } else resolve(); }; tick(); });
     }
 
@@ -224,7 +238,7 @@
       const lines = genRun();
       for(const line of lines){
         await printLine(line.t, line.p, line.cls);
-        if(line.hold){ const c=document.createElement('span'); c.className='caret'; out.lastChild.appendChild(c); return; }
+        if(line.hold){ const c=document.createElement('span'); c.className='caret'; out.lastChild.appendChild(c); out.scrollTop = out.scrollHeight; return; }
         await new Promise(r=>setTimeout(r,gap));
       }
     })();
