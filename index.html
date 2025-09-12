@@ -37,31 +37,57 @@
   <script>
     const out = document.getElementById('out');
 
-    // --- helpers ---
+    // utils
     const rnd = (min,max)=> Math.floor(Math.random()*(max-min+1))+min;
     const pick = arr => arr[rnd(0,arr.length-1)];
     const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,n);
 
+    // channels
     const MODES = [
       {k:'voice', open: sid=>`$ channel/open voice SID:${sid}`, ready:'v2t on • stream'},
       {k:'video', open: sid=>`$ channel/open video SID:${sid}`, ready:'v2t+mm on • stream'},
       {k:'chat',  open: sid=>`$ channel/open chat  SID:${sid}`, ready:'nlp on • live'}
     ];
 
+    // dx + actions
     const ICD10 = ['R07.9','E11.9','I10','J45.909','F32.9','N39.0','J18.9'];
-
     const ICHI_POOL = ['NA31.RX','PA45.LB','QA60.OB','RA05.EV','KB40.US','WA90.FU'];
+    const actionsFor = code => pick(ICHI_POOL) + ' ' + pick(ICHI_POOL);
+    const rxIdsFor = code => (['J45.909','N39.0','J18.9','E11.9','I10'].includes(code)
+      ? { product:`RX-${hex(4)}`, dose:`DOSE-${hex(3)}` } : null);
 
-    function actionsFor(code){
-      return pick(ICHI_POOL) + ' ' + pick(ICHI_POOL);
+    // timestamps
+    const pad=(n,w=2)=> String(n).padStart(w,'0');
+    const ts=()=>{ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`; };
+
+    // typing + delays
+    const speed = rnd(8,14); // per-char typing speed
+    const MAX_ROWS = 15;
+    function delayForType(type){
+      switch(type){
+        case 'boot': return rnd(900,1600); // slower boot to feel like thinking
+        case 'prompt': return rnd(90,160);
+        case 'fast': return rnd(50,110);
+        case 'normal': return rnd(150,260);
+        case 'slow': return rnd(700,1300);
+        default: return rnd(150,260);
+      }
     }
 
-    function rxIdsFor(code){
-      const rxDx = ['J45.909','N39.0','J18.9','E11.9','I10'];
-      if(!rxDx.includes(code)) return null;
-      return { product:`RX-${hex(4)}`, dose:`DOSE-${hex(3)}` };
+    function span(cls){ const s=document.createElement('span'); if(cls) s.className=cls; return s; }
+    function printLine(text, isPrompt, extraClass, type){
+      const row = document.createElement('div'); row.className = 'row';
+      row.appendChild(span('ts')).textContent = ts();
+      if(isPrompt){ row.appendChild(span('prompt')).textContent = '$ '; }
+      const content = document.createElement('span'); if(extraClass) content.className = extraClass; row.appendChild(content);
+      out.appendChild(row);
+      while(out.children.length > MAX_ROWS){ out.removeChild(out.firstChild); }
+      out.scrollTop = out.scrollHeight;
+      return new Promise(resolve=>{ let i=0; const tick=()=>{ if(i<text.length){ content.textContent += text.charAt(i++); setTimeout(tick, speed); } else resolve(); }; tick(); })
+        .then(()=> new Promise(r=>setTimeout(r, delayForType(type))));
     }
 
+    // phase 0: short boot + minimal sessions
     function buildShortSession(idx){
       const sid = String(idx).padStart(2,'0');
       const pid = rnd(80000,99999);
@@ -76,110 +102,101 @@
       const rcm = `rcm/${rnd(1,40)}`;
 
       const ev = [];
-      ev.push({t:mode.open(sid), p:true});
-      ev.push({t:mode.ready, p:false});
-      ev.push({t:`$ orchestrator spawn ${cln} ${adm} ${qa} ${rcm} PID:${pid}`, p:true});
-      ev.push({t:`agents ready`, p:false});
-      ev.push({t:`$ ${cln} finalize ${code}`, p:true});
-      ev.push({t:`actions • ${actionsFor(code)}`, p:false});
-      ev.push({t:`$ ${qa} QA diag`, p:true});
-      ev.push({t:`${code} • rationale ok`, p:false, cls:'ok'});
+      ev.push({t:mode.open(sid), p:true, type:'prompt'});
+      ev.push({t:mode.ready, p:false, type:'fast'});
+      ev.push({t:`$ orchestrator spawn ${cln} ${adm} ${qa} ${rcm} PID:${pid}`, p:true, type:'prompt'});
+      ev.push({t:`agents ready`, p:false, type:'fast'});
+      ev.push({t:`$ ${cln} finalize ${code}`, p:true, type:'prompt'});
+      ev.push({t:`actions • ${actionsFor(code)}`, p:false, type:'normal'});
+      ev.push({t:`$ ${qa} QA diag`, p:true, type:'prompt'});
+      ev.push({t:`${code} • rationale ok`, p:false, cls:'ok', type:'fast'});
       if(rx){
-        ev.push({t:`$ rx/${rnd(1,40)} e-script ${rx.product} ${rx.dose}`, p:true});
-        ev.push({t:`checks pass`, p:false, cls:'ok'});
+        ev.push({t:`$ rx/${rnd(1,40)} e-script ${rx.product} ${rx.dose}`, p:true, type:'prompt'});
+        ev.push({t:`checks pass`, p:false, cls:'ok', type:'normal'});
       }
-      ev.push({t:`$ ${adm} commit EHR:ID${ehr}`, p:true});
-      ev.push({t:`note+orders saved`, p:false});
-      ev.push({t:`$ ${rcm} claim code ${code} → payer:ID${payer}`, p:true});
-      ev.push({t:`ack ${rnd(40,95)}ms • pending`, p:false});
+      ev.push({t:`$ ${adm} commit EHR:ID${ehr}`, p:true, type:'prompt'});
+      ev.push({t:`note+orders saved`, p:false, type:'slow'});
+      ev.push({t:`$ ${rcm} claim code ${code} → payer:ID${payer}`, p:true, type:'prompt'});
+      ev.push({t:`ack ${rnd(40,95)}ms • pending`, p:false, type:'slow'});
       return ev;
     }
 
-    function genShortRun(){
+    function genPhase0(){
       const sessions = rnd(1,2);
       const ev = [];
-      ev.push({t:`$ orchestrator boot --sessions ${sessions}`, p:true});
-      ev.push({t:`cluster online • patient channels active`, p:false});
+      // longer boot sequence to feel real
+      ev.push({t:`$ orchestrator boot --sessions ${sessions}`, p:true, type:'boot'});
+      ev.push({t:`init: runtime • schedulers • network`, p:false, type:'boot'});
+      ev.push({t:`load: patient-context • healthcare-context`, p:false, type:'boot'});
+      ev.push({t:`health: connectors ok • policy-set mounted`, p:false, type:'boot'});
+      ev.push({t:`cluster online • patient channels active`, p:false, type:'fast'});
       for(let i=1;i<=sessions;i++) ev.push(...buildShortSession(i));
-      ev.push({t:'$ status cluster', p:true});
-      ev.push({t:`sessions:${sessions} • QA:100% • latency<100ms • SLA>99.9%`, p:false, cls:'ok'});
-      ev.push({t:'$', p:true, hold:true});
+      ev.push({t:'$ status cluster', p:true, type:'prompt'});
+      ev.push({t:`sessions:${sessions} • QA:100% • latency<100ms • SLA>99.9%`, p:false, cls:'ok', type:'normal'});
+      ev.push({t:'$', p:true, hold:true, type:'prompt'});
       return ev;
     }
 
-    const speed = rnd(8,14);
-    const gapBase = rnd(110,160); // base fallback
-    function jitter(ms, pct=0.25){ const d = ms * pct; return Math.max(0, ms + rnd(-d, d)); }
-    function delayFor(text, isPrompt){
-      if(isPrompt) return jitter(90, 0.3); // user typing -> snappy
-      const t = text.toLowerCase();
-      // instantaneous-ish outputs
-      if(t.includes('agents ready') || t.includes('checks pass') || t.startsWith('ack ') || t.includes('rationale ok') || t.includes('commit ok')){
-        return jitter(80, 0.4);
+    // continuation chunks appended after hold
+    function genContinueChunk(){
+      const chunk = [];
+      // remove old hold later; here we just produce more activity
+      // randomly resolve a pending claim
+      if(Math.random() < 0.6){
+        const jid = `jid-${hex(6)}`;
+        chunk.push({t:`$ automation/watch ${jid} target:PAYER:ID${rnd(10,99)}`, p:true, type:'prompt'});
+        if(Math.random() < 0.3){ chunk.push({t:`${jid} upstream latency ${rnd(800,2200)}ms`, p:false, cls:'warn', type:'slow'}); }
+        chunk.push({t:`${jid} ERA posted • remit ok`, p:false, cls:'ok', type:'normal'});
       }
-      // channel open / context ops
-      if(t.startsWith('v2t') || t.includes('channel/open') || t.includes('shared-context') || t.includes('signals fused') || t.includes('guidelines loaded')){
-        return jitter(140, 0.35);
-      }
-      // clinician finalize / actions
-      if(t.includes('finalize') || t.startsWith('actions')){
-        return jitter(180, 0.35);
-      }
-      // admin / EHR commit
-      if(t.includes('commit ehr') || t.includes('write note+orders') || t.includes('integration/api')){
-        return jitter(360, 0.4);
-      }
-      // automation queues / external systems / claims
-      if(t.includes('automation/queue') || t.includes('run • code') || t.includes('claim')){
-        return jitter(520, 0.45);
-      }
-      // upstream latency / retry / timeout -> slower
-      if(t.includes('upstream latency') || t.includes('retry(') || t.includes('timeout')){
-        return jitter(900, 0.5);
-      }
-      // status lines
-      if(t.startsWith('sessions:') || t.includes('status cluster')){
-        return jitter(220, 0.3);
-      }
-      return jitter(gapBase, 0.4);
-    }
-    const MAX_ROWS = 15;
-
-    function pad(n, w=2){ return String(n).padStart(w,'0'); }
-    function ts(){
-      const d = new Date();
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
+      // start one more brief session
+      const sid = rnd(3,9);
+      const mode = pick(MODES);
+      const code = pick(ICD10);
+      const qa = `quality/${rnd(1,40)}`;
+      chunk.push({t:mode.open(String(sid).padStart(2,'0')), p:true, type:'prompt'});
+      chunk.push({t:mode.ready, p:false, type:'fast'});
+      chunk.push({t:`$ clinician/${rnd(1,40)} finalize ${code}`, p:true, type:'prompt'});
+      chunk.push({t:`$ ${qa} QA diag`, p:true, type:'prompt'});
+      chunk.push({t:`${code} • rationale ok`, p:false, cls:'ok', type:'fast'});
+      // status roll-up
+      chunk.push({t:'$ status cluster', p:true, type:'prompt'});
+      chunk.push({t:`sessions:${rnd(1,3)} • QA:100% • latency<${rnd(80,140)}ms • SLA>99.9%`, p:false, cls:'ok', type:'normal'});
+      // end with new prompt
+      chunk.push({t:'$', p:true, hold:true, type:'prompt'});
+      return chunk;
     }
 
-    function span(cls){ const s=document.createElement('span'); if(cls) s.className=cls; return s; }
-    function printLine(text, isPrompt, extraClass){
-      const row = document.createElement('div'); row.className = 'row';
-      row.appendChild(span('ts')).textContent = ts();
-      if(isPrompt){ row.appendChild(span('prompt')).textContent = '$ '; }
-      const content = document.createElement('span'); if(extraClass) content.className = extraClass; row.appendChild(content);
-      out.appendChild(row);
-      while(out.children.length > MAX_ROWS){ out.removeChild(out.firstChild); }
-      out.scrollTop = out.scrollHeight;
-      return new Promise(resolve=>{ let i=0; const tick=()=>{ if(i<text.length){ content.textContent += text.charAt(i++); setTimeout(tick, speed); } else resolve(); }; tick(); });
-    }
+    let running = false;
+    let phase = 0;
 
-    async function run(){
-      out.innerHTML = '';
-      const lines = genShortRun();
+    async function render(lines, append=false){
+      if(running) return;
+      running = true;
+      if(!append){ out.innerHTML = ''; }
+      // if appending, remove existing caret so we can continue
+      if(append && out.lastChild){
+        const last = out.lastChild.querySelector('.caret');
+        if(last) last.remove();
+      }
       for(const line of lines){
-        await printLine(line.t, line.p, line.cls);
-        if(line.hold){ const c=document.createElement('span'); c.className='caret'; out.lastChild.appendChild(c); out.scrollTop = out.scrollHeight; return; }
-        await new Promise(r=>setTimeout(r, delayFor(line.t, line.p)));
+        await printLine(line.t, line.p, line.cls, line.type);
+        if(line.hold){ const c=document.createElement('span'); c.className='caret'; out.lastChild.appendChild(c); out.scrollTop = out.scrollHeight; }
       }
+      running = false;
     }
 
-    run();
+    function start(){ phase = 0; render(genPhase0(), false); }
+    function cont(){ phase += 1; render(genContinueChunk(), true); }
 
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        run();
-      }
-    });
+    start();
+
+    // Desktop: Enter continues; Mobile/coarse: tap continues
+    const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    if(isCoarse){
+      document.addEventListener('pointerdown', ()=>{ if(!running) cont(); }, {passive:true});
+    } else {
+      document.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !running){ cont(); } });
+    }
   </script>
 </body>
 </html>
