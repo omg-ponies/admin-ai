@@ -11,11 +11,11 @@
     }
     html,body{height:100%}
     body { margin:0; font-family:"IBM Plex Mono", monospace; background:var(--bg); color:var(--mono); display:flex; align-items:center; justify-content:center; min-height:100vh; }
-    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:1040px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:900px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
     .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
     .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
     .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
-    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:420px; overflow-y:auto; }
+    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:360px; overflow-y:auto; }
     .row{ display:flex; gap:8px; align-items:baseline; margin:0 0 4px; }
     .ts{ color:#80919a; opacity:.85; font-size:12px; }
     .prompt{ color:var(--accent2); }
@@ -42,163 +42,107 @@
     const pick = arr => arr[rnd(0,arr.length-1)];
     const hex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,n);
 
-    // Modalities (patient channels)
     const MODES = [
       {k:'voice', open: sid=>`$ channel/open voice SID:${sid}`, ready:'v2t on • stream'},
       {k:'video', open: sid=>`$ channel/open video SID:${sid}`, ready:'v2t+mm on • stream'},
       {k:'chat',  open: sid=>`$ channel/open chat  SID:${sid}`, ready:'nlp on • live'}
     ];
 
-    // Expanded ICD-10 set (diagnosis only - shown as plain codes)
-    const ICD10 = [
-      'R07.9','E11.9','I10','J45.909','F32.9','M54.5','Z00.00','Z20.822','K21.9','N39.0',
-      'J06.9','J18.9','E78.5','E03.9','E66.9','F41.9','G47.00','K52.9','K59.00','N30.00',
-      'N76.0','Z23','Z12.11','Z12.31','J20.9','J02.9','R51','R42','S93.4','T14.8',
-      'H66.90','L03.90','J30.9','J31.0','K64.9','K60.2','G40.909','I48.91','I21.9','R50.9',
-      'R11.2','J00','J03.90','K35.80','K85.90','K80.20','N20.0','N92.0','Z79.01','Z79.4',
-      'Z79.899','Z13.1','Z13.220','Z68.30','Z71.3'
-    ];
+    const ICD10 = ['R07.9','E11.9','I10','J45.909','F32.9','N39.0','J18.9'];
 
-    // ICHI-like action codes (placeholders shaped like ICHI; no descriptions – insiders will parse)
-    const ICHI_POOL = [
-      'AB10.YS','QC50.AN','DA10.AN','FB20.ZZ','GB30.XR','HB15.CT','JA12.MM','KB40.US',
-      'LA22.PT','MA11.CB','NA31.RX','PA45.LB','QA60.OB','RA05.EV','SA70.SC','TA80.OP',
-      'UA12.VS','VA33.EN','WA90.FU','XA55.CS','YA10.ED'
-    ];
-
-    // Map some Dx → likely ICHI bundles
-    const CODEBOOK = {
-      'J45.909': ['NA31.RX','WA90.FU'],
-      'E11.9':   ['PA45.LB','WA90.FU'],
-      'I10':     ['QA60.OB','WA90.FU'],
-      'R07.9':   ['HB15.CT','RA05.EV'],
-      'N39.0':   ['PA45.LB','NA31.RX'],
-      'K21.9':   ['RA05.EV'],
-      'M54.5':   ['LA22.PT'],
-      'F32.9':   ['QA60.OB','WA90.FU'],
-      'Z20.822': ['PA45.LB','WA90.FU'],
-      'Z00.00':  ['QA60.OB','PA45.LB'],
-      'J18.9':   ['KB40.US','NA31.RX'],
-      'E78.5':   ['PA45.LB','WA90.FU'],
-      'E03.9':   ['PA45.LB','WA90.FU'],
-      'J20.9':   ['RA05.EV','WA90.FU'],
-      'J02.9':   ['PA45.LB'],
-      'R42':     ['QA60.OB'],
-      'S93.4':   ['SA70.SC'],
-      'T14.8':   ['TA80.OP'],
-      'H66.90':  ['NA31.RX'],
-      'L03.90':  ['NA31.RX','SA70.SC'],
-      'K35.80':  ['TA80.OP'],
-      'K85.90':  ['PA45.LB'],
-      'K80.20':  ['KB40.US','TA80.OP'],
-      'N20.0':   ['PA45.LB','NA31.RX'],
-      'I48.91':  ['QA60.OB'],
-      'I21.9':   ['HB15.CT','RA05.EV']
-    };
+    const ICHI_POOL = ['NA31.RX','PA45.LB','QA60.OB','RA05.EV','KB40.US','WA90.FU'];
 
     function actionsFor(code){
-      const bundle = CODEBOOK[code] || [pick(ICHI_POOL), pick(ICHI_POOL)];
-      const uniq = [...new Set(bundle)];
-      return uniq.join(' ');
+      return pick(ICHI_POOL) + ' ' + pick(ICHI_POOL);
     }
 
     function rxIdsFor(code){
-      const rxDx = ['J45.909','N39.0','J18.9','H66.90','L03.90','E11.9','I10'];
+      const rxDx = ['J45.909','N39.0','J18.9','E11.9','I10'];
       if(!rxDx.includes(code)) return null;
       return { product:`RX-${hex(4)}`, dose:`DOSE-${hex(3)}` };
     }
 
-    function buildSession(idx){
+    function buildShortSession(idx){
       const sid = String(idx).padStart(2,'0');
       const pid = rnd(80000,99999);
       const payer = rnd(10,99);
       const ehr = rnd(20,59);
       const mode = pick(MODES);
       const code = pick(ICD10);
-      const alt = pick(ICD10.filter(c=>c!==code));
       const rx = rxIdsFor(code);
+      const qa = `quality/${rnd(1,40)}`;
+      const cln = `clinician/${rnd(1,40)}`;
+      const adm = `admin/${rnd(1,40)}`;
+      const rcm = `rcm/${rnd(1,40)}`;
 
       const ev = [];
       ev.push({t:mode.open(sid), p:true});
       ev.push({t:mode.ready, p:false});
-      ev.push({t:`$ context/patient merge PID:${pid}`, p:true});
-      ev.push({t:`signals fused • longitudinal hx available`, p:false});
-      ev.push({t:`$ context/healthcare load policy-set clinical+ops`, p:true});
-      ev.push({t:`guidelines loaded • org rules active`, p:false});
-
-      const cln = `clinician/${rnd(1,96)}`;
-      const adm = `admin/${rnd(1,96)}`;
-      const qa  = `quality/${rnd(1,96)}`;
-      const rxc = `rx/${rnd(1,96)}`;
-      const rcm = `rcm/${rnd(1,96)}`;
-      const tri = `triage/${rnd(1,96)}`;
-      ev.push({t:`$ orchestrator spawn ${cln} ${adm} ${qa} ${rxc} ${rcm} ${tri} PID:${pid}`, p:true});
-      ev.push({t:`agents ready • shared-context pinned`, p:false});
-
-      ev.push({t:`$ ${tri} rank`, p:true});
-      ev.push({t:`candidates: ${code} > ${alt}`, p:false});
+      ev.push({t:`$ orchestrator spawn ${cln} ${adm} ${qa} ${rcm} PID:${pid}`, p:true});
+      ev.push({t:`agents ready`, p:false});
       ev.push({t:`$ ${cln} finalize ${code}`, p:true});
       ev.push({t:`actions • ${actionsFor(code)}`, p:false});
-
-      ev.push({t:`$ ${qa} QA diag PID:${pid}`, p:true});
-      ev.push({t:`code ${code} • rationale ok`, p:false, cls:'ok'});
-
+      ev.push({t:`$ ${qa} QA diag`, p:true});
+      ev.push({t:`${code} • rationale ok`, p:false, cls:'ok'});
       if(rx){
-        ev.push({t:`$ ${rxc} e-script ${rx.product} ${rx.dose}`, p:true});
-        ev.push({t:`checks: interactions • allergies • formulary`, p:false});
-        ev.push({t:`$ ${qa} QA rx PID:${pid}`, p:true});
-        ev.push({t:`med ok • guardrails pass`, p:false, cls:'ok'});
+        ev.push({t:`$ rx/${rnd(1,40)} e-script ${rx.product} ${rx.dose}`, p:true});
+        ev.push({t:`checks pass`, p:false, cls:'ok'});
       }
-
-      const jid1 = `jid-${hex(6)}`;
-      ev.push({t:`$ automation/queue ${jid1} target:EHR:ID${ehr} op:commit`, p:true});
-      ev.push({t:`queued • wait`, p:false});
-      if(Math.random() < 0.35){ ev.push({t:`${jid1} upstream latency ${rnd(1200,3900)}ms`, p:false, cls:'warn'}); }
-      if(Math.random() < 0.25){ ev.push({t:`${jid1} retry(1) backoff 2s`, p:false, cls:'warn'}); }
-      ev.push({t:`${jid1} run • write Note+Orders • code ${code}`, p:false});
-      ev.push({t:`integration/api 200 • audit appended`, p:false});
-      ev.push({t:`$ ${qa} QA commit PID:${pid}`, p:true});
-      ev.push({t:`commit ok`, p:false, cls:'ok'});
-
-      const jid2 = `jid-${hex(6)}`;
-      ev.push({t:`$ automation/queue ${jid2} target:PAYER:ID${payer} op:claim`, p:true});
-      if(Math.random() < 0.3){ ev.push({t:`${jid2} upstream latency ${rnd(800,4200)}ms`, p:false, cls:'warn'}); }
-      ev.push({t:`${jid2} run • code ${code} • attach ERA hook`, p:false});
-      if(Math.random() < 0.18){
-        ev.push({t:`${jid2} timeout • requeue`, p:false, cls:'warn'});
-        ev.push({t:`${jid2} run • retry ok`, p:false});
-      }
-      ev.push({t:`ack ${rnd(40,95)}ms • status pending`, p:false});
-
+      ev.push({t:`$ ${adm} commit EHR:ID${ehr}`, p:true});
+      ev.push({t:`note+orders saved`, p:false});
+      ev.push({t:`$ ${rcm} claim code ${code} → payer:ID${payer}`, p:true});
+      ev.push({t:`ack ${rnd(40,95)}ms • pending`, p:false});
       return ev;
     }
 
-    function genRun(){
-      const sessions = rnd(4,8);
+    function genShortRun(){
+      const sessions = rnd(1,2);
       const ev = [];
       ev.push({t:`$ orchestrator boot --sessions ${sessions}`, p:true});
-      ev.push({t:`cluster online • patient channels: voice • video • chat`, p:false});
-
-      for(let i=1;i<=sessions;i++) ev.push(...buildSession(i));
-
-      const head = ev.slice(0,2);
-      const middle = ev.slice(2);
-      for(let i=middle.length-1;i>0;i--){ const j=rnd(0,i); [middle[i],middle[j]]=[middle[j],middle[i]]; }
-
-      const latency = rnd(70,140);
-      const err = (Math.random()*0.02+0.001).toFixed(2);
-      const sla = (99.90 + Math.random()*0.09).toFixed(2);
-      const tail = [
-        {t:'$ status cluster', p:true},
-        {t:`sessions:${sessions} • QA coverage:100% clinical • latency<${latency}ms • err:${err}% • SLA>${sla}%`, p:false, cls:'ok'},
-        {t:'$', p:true, hold:true}
-      ];
-
-      return [...head, ...middle, ...tail];
+      ev.push({t:`cluster online • patient channels active`, p:false});
+      for(let i=1;i<=sessions;i++) ev.push(...buildShortSession(i));
+      ev.push({t:'$ status cluster', p:true});
+      ev.push({t:`sessions:${sessions} • QA:100% • latency<100ms • SLA>99.9%`, p:false, cls:'ok'});
+      ev.push({t:'$', p:true, hold:true});
+      return ev;
     }
 
-    const speed = rnd(9,16);
-    const gap = rnd(180,320);
+    const speed = rnd(8,14);
+    const gapBase = rnd(110,160); // base fallback
+    function jitter(ms, pct=0.25){ const d = ms * pct; return Math.max(0, ms + rnd(-d, d)); }
+    function delayFor(text, isPrompt){
+      if(isPrompt) return jitter(90, 0.3); // user typing -> snappy
+      const t = text.toLowerCase();
+      // instantaneous-ish outputs
+      if(t.includes('agents ready') || t.includes('checks pass') || t.startsWith('ack ') || t.includes('rationale ok') || t.includes('commit ok')){
+        return jitter(80, 0.4);
+      }
+      // channel open / context ops
+      if(t.startsWith('v2t') || t.includes('channel/open') || t.includes('shared-context') || t.includes('signals fused') || t.includes('guidelines loaded')){
+        return jitter(140, 0.35);
+      }
+      // clinician finalize / actions
+      if(t.includes('finalize') || t.startsWith('actions')){
+        return jitter(180, 0.35);
+      }
+      // admin / EHR commit
+      if(t.includes('commit ehr') || t.includes('write note+orders') || t.includes('integration/api')){
+        return jitter(360, 0.4);
+      }
+      // automation queues / external systems / claims
+      if(t.includes('automation/queue') || t.includes('run • code') || t.includes('claim')){
+        return jitter(520, 0.45);
+      }
+      // upstream latency / retry / timeout -> slower
+      if(t.includes('upstream latency') || t.includes('retry(') || t.includes('timeout')){
+        return jitter(900, 0.5);
+      }
+      // status lines
+      if(t.startsWith('sessions:') || t.includes('status cluster')){
+        return jitter(220, 0.3);
+      }
+      return jitter(gapBase, 0.4);
+    }
     const MAX_ROWS = 15;
 
     function pad(n, w=2){ return String(n).padStart(w,'0'); }
@@ -214,26 +158,23 @@
       if(isPrompt){ row.appendChild(span('prompt')).textContent = '$ '; }
       const content = document.createElement('span'); if(extraClass) content.className = extraClass; row.appendChild(content);
       out.appendChild(row);
-
       while(out.children.length > MAX_ROWS){ out.removeChild(out.firstChild); }
       out.scrollTop = out.scrollHeight;
-
       return new Promise(resolve=>{ let i=0; const tick=()=>{ if(i<text.length){ content.textContent += text.charAt(i++); setTimeout(tick, speed); } else resolve(); }; tick(); });
     }
 
     async function run(){
       out.innerHTML = '';
-      const lines = genRun();
+      const lines = genShortRun();
       for(const line of lines){
         await printLine(line.t, line.p, line.cls);
         if(line.hold){ const c=document.createElement('span'); c.className='caret'; out.lastChild.appendChild(c); out.scrollTop = out.scrollHeight; return; }
-        await new Promise(r=>setTimeout(r,gap));
+        await new Promise(r=>setTimeout(r, delayFor(line.t, line.p)));
       }
     }
 
     run();
 
-    // rerun when Enter is pressed
     document.addEventListener('keydown', (e)=>{
       if(e.key === 'Enter'){
         run();
