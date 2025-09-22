@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin.ai</title>
+  <title>Admin.ai Jobs</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -56,21 +56,38 @@
       });
     }
 
+    async function printJob(title, location){
+      const l = addRow('', true);
+      await typeInto(l, `job/open ${title} — ${location||"Unknown"}`);
+    }
+
     async function run(){
-      // line 1
       const l1 = addRow('', true);
-      await typeInto(l1, 'I can has job?');
-      // blinking caret
-      const caret = document.createElement('span'); caret.className='caret'; l1.parentElement.appendChild(caret);
-
-      // wait a bit
-      await new Promise(r=>setTimeout(r, 1800));
-
-      // line 2
-      caret.remove();
-      const l2 = addRow('', true);
-      await typeInto(l2, 'plz');
-      const caret2 = document.createElement('span'); caret2.className='caret'; l2.parentElement.appendChild(caret2);
+      await typeInto(l1, "fetching jobs...");
+      try {
+        const res = await fetch("https://api.teamtailor.com/v1/jobs", {
+          headers: {
+            "Authorization": "Token token=Rl7gCDodqn5sf8QGEttPHBlAlLL3cKfKkRzuHfvR",
+            "X-Api-Version": "20240401",
+            "Content-Type": "application/vnd.api+json"
+          }
+        });
+        const data = await res.json();
+        if(data.data){
+          for(const job of data.data){
+            const attrs = job.attributes;
+            await printJob(attrs.title, attrs.location);
+          }
+        } else {
+          const err = addRow('', true);
+          err.textContent = "no jobs found";
+        }
+      } catch(e){
+        const err = addRow('', true);
+        err.textContent = "API error: " + e;
+      }
+      const caretRow = addRow('', true);
+      const caret = document.createElement('span'); caret.className='caret'; caretRow.appendChild(caret);
     }
 
     run();
