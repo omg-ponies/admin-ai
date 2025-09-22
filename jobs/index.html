@@ -11,17 +11,15 @@
     }
     html,body{height:100%}
     body { margin:0; font-family:"IBM Plex Mono", monospace; background:var(--bg); color:var(--mono); display:flex; align-items:center; justify-content:center; min-height:100vh; }
-    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:980px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:900px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
     .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
     .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
     .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
-    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.4; max-height:70vh; overflow-y:auto; }
-    .row{ display:flex; gap:8px; align-items:baseline; margin:0 0 6px; }
+    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:360px; overflow-y:auto; }
+    .row{ display:flex; gap:8px; align-items:baseline; margin:0 0 4px; }
     .ts{ color:#80919a; opacity:.85; font-size:12px; }
     .prompt{ color:var(--accent); }
     .caret{ display:inline-block; width:8px; height:1.05em; background:var(--accent); vertical-align:-2px; animation:blink 1.1s steps(1) infinite; }
-    .indent { padding-left:32px; opacity:.95; }
-    .muted { color:var(--muted); }
     @keyframes blink{ 50%{ opacity:0 } }
   </style>
 </head>
@@ -39,118 +37,55 @@
     const pad = (n,w=2)=>String(n).padStart(w,'0');
     const ts  = ()=>{ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`; };
 
-    function addRow(text, withPrompt=false, extraClass=''){
-      const row = document.createElement('div'); row.className='row'+(extraClass?` ${extraClass}`:'');
+    function addRow(text, withPrompt=false){
+      const row = document.createElement('div'); row.className='row';
       const t = document.createElement('span'); t.className='ts'; t.textContent = ts(); row.appendChild(t);
       if(withPrompt){ const p=document.createElement('span'); p.className='prompt'; p.textContent='$ '; row.appendChild(p); }
-      const c = document.createElement('span'); c.textContent = text; row.appendChild(c);
-      out.appendChild(row); out.scrollTop = out.scrollHeight;
-      return row;
+      const c = document.createElement('span'); row.appendChild(c);
+      out.appendChild(row);
+      out.scrollTop = out.scrollHeight;
+      return c;
     }
 
-    function typeInto(node, text, speed=16){
+    function typeInto(el, text, speed=18){
       return new Promise(res=>{
-        // node is a row; append a text span at the end
-        const span = document.createElement('span'); node.appendChild(span);
         let i=0; const tick=()=>{ 
-          if(i<text.length){ span.textContent += text.charAt(i++); setTimeout(tick, speed); }
+          if(i<text.length){ el.textContent += text.charAt(i++); setTimeout(tick, speed); }
           else res();
         }; tick();
       });
     }
 
-    function stripHtml(html){
-      const tmp = document.createElement('div'); tmp.innerHTML = html || '';
-      return tmp.textContent || tmp.innerText || '';
-    }
-
-    function truncate(s, n){
-      if(!s) return '';
-      return s.length > n ? s.slice(0,n-1) + '…' : s;
-    }
-
-    // Resolve relationship resources from JSON:API "included"
-    function buildIncludedIndex(included){
-      const idx = {};
-      (included || []).forEach(it=>{
-        idx[`${it.type}:${it.id}`] = it;
-      });
-      return idx;
-    }
-    function relName(job, relType, idx){
-      const rel = job.relationships && job.relationships[relType] && job.relationships[relType].data;
-      if(!rel) return null;
-      const key = `${rel.type}:${rel.id}`;
-      const rec = idx[key];
-      const name = rec && rec.attributes && (rec.attributes.name || rec.attributes.title);
-      return name || null;
-    }
-
-    async function printJob(job, idx){
-      const a   = job.attributes || {};
-      const loc = relName(job, 'location', idx) || a.location || 'Unknown';
-      const dep = relName(job, 'department', idx);
-      const role= relName(job, 'role', idx);
-
-      const title = a.title || `Job ${job.id}`;
-      const line1 = addRow('', true);
-      await typeInto(line1, `job/open ${title} - ${loc}`);
-
-      if(dep || role){
-        addRow(`info ${dep ? `department=${dep}` : ''}${dep && role ? ' ' : ''}${role ? `role=${role}` : ''}`, true, 'indent muted');
-      }
-
-      // description snippet
-      const bodyText = truncate(stripHtml(a.body || a.description || a.pitch || ''), 300);
-      if(bodyText){
-        addRow(`desc ${bodyText}`, true, 'indent');
-      }
-
-      // public links
-      const links = job.links || {};
-      const jobUrl  = links['careersite-job-url'];
-      const applyUrl= links['careersite-job-apply-url'] || links['careersite-job-apply-iframe-url'];
-      if(jobUrl){
-        addRow(`url ${jobUrl}`, true, 'indent muted');
-      }
-      if(applyUrl){
-        addRow(`apply ${applyUrl}`, true, 'indent muted');
-      }
-
-      // spacer
-      addRow('', true);
+    async function printJob(title, location){
+      const l = addRow('', true);
+      await typeInto(l, `job/open ${title} — ${location||"Unknown"}`);
     }
 
     async function run(){
       const l1 = addRow('', true);
       await typeInto(l1, "fetching jobs...");
-
       try {
-        const url = "https://api.teamtailor.com/v1/jobs?include=department,role,location&filter[published]=true&sort=-created-at";
-        const res = await fetch(url, {
+        const res = await fetch("https://api.teamtailor.com/v1/jobs", {
           headers: {
             "Authorization": "Token token=Rl7gCDodqn5sf8QGEttPHBlAlLL3cKfKkRzuHfvR",
             "X-Api-Version": "20240401",
             "Content-Type": "application/vnd.api+json"
           }
         });
-
-        // If CORS blocks, this will still throw here when reading JSON
         const data = await res.json();
-
-        if(!data || !Array.isArray(data.data) || data.data.length === 0){
-          addRow("no jobs found", true);
-        } else {
-          const idx = buildIncludedIndex(data.included);
+        if(data.data){
           for(const job of data.data){
-            await printJob(job, idx);
+            const attrs = job.attributes;
+            await printJob(attrs.title, attrs.location);
           }
+        } else {
+          const err = addRow('', true);
+          err.textContent = "no jobs found";
         }
-      } catch (e){
-        addRow("API error - see console", true);
-        console.error(e);
+      } catch(e){
+        const err = addRow('', true);
+        err.textContent = "API error: " + e;
       }
-
       const caretRow = addRow('', true);
       const caret = document.createElement('span'); caret.className='caret'; caretRow.appendChild(caret);
     }
