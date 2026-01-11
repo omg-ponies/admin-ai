@@ -38,53 +38,11 @@
 
   <script>
     const jobs = {
-      'ai-engineer': {
-        title: 'AI Engineer',
-        location: 'Remote / San Francisco',
-        desc: `We're building AI agents that automate healthcare admin.
-
-You'll work on:
-• Multi-agent orchestration systems
-• LLM integration & prompt engineering
-• Healthcare workflow automation
-• Real-time clinical decision support
-
-Stack: Python, TypeScript, Claude/GPT-4, Ray
-Experience: 3+ years, AI/ML background preferred
-
-This is hard, interesting work. Healthcare is broken. Help us fix it.`
+      'member-of-technical-staff': {
+        title: 'Member of Technical Staff'
       },
-      'founding-engineer': {
-        title: 'Founding Engineer',
-        location: 'San Francisco (in-person)',
-        desc: `Join as one of the first 5 engineers.
-
-You'll:
-• Own major product areas end-to-end
-• Shape architecture & technical direction
-• Work directly with founders daily
-• Build in public, ship fast, iterate
-
-Stack: Whatever works. Probably TypeScript/Python.
-Experience: Comfortable with ambiguity & high autonomy
-
-Equity-heavy comp. If you want a big company, this isn't it.`
-      },
-      'healthcare-ops': {
-        title: 'Healthcare Operations',
-        location: 'Remote',
-        desc: `Bridge the gap between AI and real clinics.
-
-You'll:
-• Work with pilot customers daily
-• Translate clinical workflows into product requirements
-• Ensure AI outputs are clinically accurate
-• Build operational playbooks
-
-Background: RN, medical assistant, or healthcare admin experience
-Tech skills: Not required but helpful
-
-You'll teach engineers how healthcare actually works.`
+      'member-of-staff': {
+        title: 'Member of Staff'
       }
     };
 
@@ -159,7 +117,7 @@ You'll teach engineers how healthcare actually works.`
           const jobKey = arg.toLowerCase().replace(/\s+/g, '-');
           const job = jobs[jobKey];
           if (job) {
-            print(`\n<strong>${job.title}</strong>\n${job.location}\n\n${job.desc}\n`);
+            print(`\n<strong>${job.title}</strong>\n`);
           } else {
             print(`cat: ${arg}: No such job`, 'muted');
             print('Try: ls', 'muted');
@@ -169,8 +127,7 @@ You'll teach engineers how healthcare actually works.`
         case 'apply':
           const applyKey = arg.toLowerCase().replace(/\s+/g, '-');
           if (jobs[applyKey]) {
-            print(`\n<span class="ok">→ Email: jobs@admin.ai</span>`, 'ok');
-            print(`Include: Resume + why you're interested + something you've built\n`);
+            print(`\n<span class="ok">→ jobs@admin.ai</span>\n`, 'ok');
           } else {
             print(`apply: ${arg}: No such job`, 'muted');
           }
@@ -179,8 +136,8 @@ You'll teach engineers how healthcare actually works.`
         case 'help':
           print(`Available commands:
   ls              List open positions
-  cat [job]       Read job description
-  apply [job]     Get application info
+  cat [job]       View role
+  apply [job]     Apply
   clear           Clear screen
   whoami          ???`);
           break;
