@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0b0c0e; --panel:#0a0d10; --line:#1b2025; --head:#0d1115; --mono:#cfe7e7; --muted:#7d8a96; --accent:#00ffff;
+      --bg:#0b0c0e; --panel:#0a0d10; --line:#1b2025; --head:#0d1115; --mono:#cfe7e7; --muted:#7d8a96; --accent:#00ffff; --ok:#36d399;
     }
     html,body{height:100%}
     body { margin:0; font-family:"IBM Plex Mono", monospace; background:var(--bg); color:var(--mono); display:flex; align-items:center; justify-content:center; min-height:100vh; }
@@ -15,82 +15,219 @@
     .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
     .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
     .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
-    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:360px; overflow-y:auto; }
-    .row{ display:flex; gap:8px; align-items:baseline; margin:0 0 4px; }
-    .ts{ color:#80919a; opacity:.85; font-size:12px; }
+    .term-body { font-size:14px; padding:14px 16px; line-height:1.6; max-height:500px; overflow-y:auto; }
     .prompt{ color:var(--accent); }
-    .caret{ display:inline-block; width:8px; height:1.05em; background:var(--accent); vertical-align:-2px; animation:blink 1.1s steps(1) infinite; }
+    .ok{ color:var(--ok); }
+    .muted{ color:var(--muted); }
+    .caret{ display:inline-block; width:8px; height:14px; background:var(--accent); margin-left:4px; animation:blink 1.1s steps(1) infinite; }
     @keyframes blink{ 50%{ opacity:0 } }
+    input{ background:transparent; border:none; outline:none; color:var(--mono); font-family:inherit; font-size:14px; flex:1; }
+    .input-row{ display:flex; align-items:center; }
+    a{ color:var(--accent); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
   </style>
 </head>
 <body>
-  <div class="hero-terminal" id="term">
+  <div class="hero-terminal">
     <div class="term-head">
       <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-      <span class="badge">/usr/local/admin/jobs</span>
+      <span class="badge">/careers</span>
     </div>
-    <div class="term-body" id="out" aria-label="terminal"></div>
+    <div class="term-body" id="output"></div>
   </div>
 
   <script>
-    const out = document.getElementById('out');
-    const pad = (n,w=2)=>String(n).padStart(w,'0');
-    const ts  = ()=>{ const d=new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`; };
+    const jobs = {
+      'ai-engineer': {
+        title: 'AI Engineer',
+        location: 'Remote / San Francisco',
+        desc: `We're building AI agents that automate healthcare admin.
 
-    function addRow(text, withPrompt=false){
-      const row = document.createElement('div'); row.className='row';
-      const t = document.createElement('span'); t.className='ts'; t.textContent = ts(); row.appendChild(t);
-      if(withPrompt){ const p=document.createElement('span'); p.className='prompt'; p.textContent='$ '; row.appendChild(p); }
-      const c = document.createElement('span'); row.appendChild(c);
-      out.appendChild(row);
-      out.scrollTop = out.scrollHeight;
-      return c;
-    }
+You'll work on:
+• Multi-agent orchestration systems
+• LLM integration & prompt engineering
+• Healthcare workflow automation
+• Real-time clinical decision support
 
-    function typeInto(el, text, speed=18){
-      return new Promise(res=>{
-        let i=0; const tick=()=>{ 
-          if(i<text.length){ el.textContent += text.charAt(i++); setTimeout(tick, speed); }
-          else res();
-        }; tick();
-      });
-    }
+Stack: Python, TypeScript, Claude/GPT-4, Ray
+Experience: 3+ years, AI/ML background preferred
 
-    async function printJob(title, location){
-      const l = addRow('', true);
-      await typeInto(l, `job/open ${title} — ${location||"Unknown"}`);
-    }
+This is hard, interesting work. Healthcare is broken. Help us fix it.`
+      },
+      'founding-engineer': {
+        title: 'Founding Engineer',
+        location: 'San Francisco (in-person)',
+        desc: `Join as one of the first 5 engineers.
 
-    async function run(){
-      const l1 = addRow('', true);
-      await typeInto(l1, "fetching jobs...");
-      try {
-        const res = await fetch("https://api.teamtailor.com/v1/jobs", {
-          headers: {
-            "Authorization": "Token token=Rl7gCDodqn5sf8QGEttPHBlAlLL3cKfKkRzuHfvR",
-            "X-Api-Version": "20240401",
-            "Content-Type": "application/vnd.api+json"
-          }
-        });
-        const data = await res.json();
-        if(data.data){
-          for(const job of data.data){
-            const attrs = job.attributes;
-            await printJob(attrs.title, attrs.location);
-          }
-        } else {
-          const err = addRow('', true);
-          err.textContent = "no jobs found";
-        }
-      } catch(e){
-        const err = addRow('', true);
-        err.textContent = "API error: " + e;
+You'll:
+• Own major product areas end-to-end
+• Shape architecture & technical direction
+• Work directly with founders daily
+• Build in public, ship fast, iterate
+
+Stack: Whatever works. Probably TypeScript/Python.
+Experience: Comfortable with ambiguity & high autonomy
+
+Equity-heavy comp. If you want a big company, this isn't it.`
+      },
+      'healthcare-ops': {
+        title: 'Healthcare Operations',
+        location: 'Remote',
+        desc: `Bridge the gap between AI and real clinics.
+
+You'll:
+• Work with pilot customers daily
+• Translate clinical workflows into product requirements
+• Ensure AI outputs are clinically accurate
+• Build operational playbooks
+
+Background: RN, medical assistant, or healthcare admin experience
+Tech skills: Not required but helpful
+
+You'll teach engineers how healthcare actually works.`
       }
-      const caretRow = addRow('', true);
-      const caret = document.createElement('span'); caret.className='caret'; caretRow.appendChild(caret);
+    };
+
+    const output = document.getElementById('output');
+    const history = [];
+    let historyIndex = -1;
+
+    function print(text, className = '') {
+      const line = document.createElement('div');
+      if (className) line.className = className;
+      line.innerHTML = text;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
     }
 
-    run();
+    function printPrompt() {
+      const row = document.createElement('div');
+      row.className = 'input-row';
+      row.innerHTML = '<span class="prompt">$ </span>';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.autofocus = true;
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const cmd = input.value.trim();
+          if (cmd) {
+            history.unshift(cmd);
+            historyIndex = -1;
+            print(`<span class="prompt">$ </span>${cmd}`);
+            handleCommand(cmd);
+          } else {
+            printPrompt();
+          }
+          row.remove();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (historyIndex < history.length - 1) {
+            historyIndex++;
+            input.value = history[historyIndex];
+          }
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (historyIndex > 0) {
+            historyIndex--;
+            input.value = history[historyIndex];
+          } else {
+            historyIndex = -1;
+            input.value = '';
+          }
+        }
+      });
+
+      row.appendChild(input);
+      output.appendChild(row);
+      input.focus();
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function handleCommand(cmd) {
+      const parts = cmd.split(' ');
+      const command = parts[0].toLowerCase();
+      const arg = parts.slice(1).join(' ');
+
+      switch(command) {
+        case 'ls':
+          print(Object.keys(jobs).join('\n'), 'ok');
+          break;
+
+        case 'cat':
+          const jobKey = arg.toLowerCase().replace(/\s+/g, '-');
+          const job = jobs[jobKey];
+          if (job) {
+            print(`\n<strong>${job.title}</strong>\n${job.location}\n\n${job.desc}\n`);
+          } else {
+            print(`cat: ${arg}: No such job`, 'muted');
+            print('Try: ls', 'muted');
+          }
+          break;
+
+        case 'apply':
+          const applyKey = arg.toLowerCase().replace(/\s+/g, '-');
+          if (jobs[applyKey]) {
+            print(`\n<span class="ok">→ Email: jobs@admin.ai</span>`, 'ok');
+            print(`Include: Resume + why you're interested + something you've built\n`);
+          } else {
+            print(`apply: ${arg}: No such job`, 'muted');
+          }
+          break;
+
+        case 'help':
+          print(`Available commands:
+  ls              List open positions
+  cat [job]       Read job description
+  apply [job]     Get application info
+  clear           Clear screen
+  whoami          ???`);
+          break;
+
+        case 'clear':
+          output.innerHTML = '';
+          break;
+
+        case 'whoami':
+          print(`You're someone who found the jobs page.
+Maybe you're curious. Maybe you're talented.
+Maybe you want to fix healthcare.
+
+We're looking for all three.`, 'ok');
+          break;
+
+        case 'sudo':
+          print(`Nice try. We don't hire people who need sudo for everything.`, 'muted');
+          break;
+
+        case 'exit':
+        case 'quit':
+          print(`There is no escape. (Try: <a href="/">cd /</a>)`, 'muted');
+          break;
+
+        case 'cd':
+          if (arg === '/' || arg === '~' || arg === '..') {
+            window.location.href = '/';
+          } else {
+            print(`cd: ${arg}: Not a directory`, 'muted');
+          }
+          break;
+
+        default:
+          if (cmd) {
+            print(`${command}: command not found`, 'muted');
+            print(`Try: help`, 'muted');
+          }
+      }
+
+      printPrompt();
+    }
+
+    // Init
+    print(`<strong>Admin.ai Careers</strong>`);
+    print(`Type 'help' for commands, 'ls' to see open roles\n`, 'muted');
+    printPrompt();
   </script>
 </body>
 </html>
