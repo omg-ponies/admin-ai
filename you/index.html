@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin.ai - You</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0c0e; --panel:#0a0d10; --line:#1b2025; --head:#0d1115; --mono:#cfe7e7; --muted:#7d8a96; --accent:#00ffff;
+    }
+    html,body{height:100%; margin:0; overflow:hidden;}
+    body {
+      font-family:"IBM Plex Mono", monospace;
+      background:var(--bg);
+      color:var(--accent);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .hero-terminal {
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      width:95%;
+      height:95vh;
+      max-width:1400px;
+      box-shadow:0 10px 40px rgba(0,0,0,.35);
+      display:flex;
+      flex-direction:column;
+    }
+    .term-head {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-bottom:1px solid #151a1f;
+      background:var(--head);
+      flex-shrink:0;
+    }
+    .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
+    .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; }
+    .term-body {
+      padding:16px;
+      white-space:pre;
+      line-height:1.0;
+      font-size:10px;
+      overflow:hidden;
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    #ascii-output {
+      letter-spacing:0.05em;
+      text-align:center;
+    }
+    #video { display:none; }
+    .error { color:#ff6b6b; }
+
+    /* Optional CRT glow effect */
+    .term-body::before {
+      content:'';
+      position:absolute;
+      top:0; left:0; right:0; bottom:0;
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.15) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events:none;
+      animation:scanline 8s linear infinite;
+    }
+
+    @keyframes scanline {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 100%; }
+    }
+
+    @media (min-width: 768px) {
+      .term-body { font-size:11px; }
+    }
+    @media (min-width: 1024px) {
+      .term-body { font-size:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-terminal">
+    <div class="term-head">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="badge">/usr/local/admin/you</span>
+    </div>
+    <div class="term-body">
+      <pre id="ascii-output">> Initializing camera...</pre>
+    </div>
+  </div>
+
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const output = document.getElementById('ascii-output');
+
+    // ASCII characters from darkest to lightest
+    const ASCII_CHARS = '@#%*+=-:. ';
+
+    // Target resolution for ASCII output
+    const ASCII_WIDTH = 120;
+    let ASCII_HEIGHT;
+
+    async function init() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user'
+          }
+        });
+
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          video.play();
+
+          // Calculate ASCII height based on video aspect ratio
+          const aspectRatio = video.videoHeight / video.videoWidth;
+          ASCII_HEIGHT = Math.floor(ASCII_WIDTH * aspectRatio * 0.5); // 0.5 compensates for character aspect ratio
+
+          canvas.width = ASCII_WIDTH;
+          canvas.height = ASCII_HEIGHT;
+
+          output.textContent = '';
+          requestAnimationFrame(render);
+        };
+      } catch (err) {
+        output.innerHTML = '<span class="error">> ERROR: Camera access denied\n> Please enable camera permissions and reload</span>';
+      }
+    }
+
+    function brightnessToASCII(r, g, b) {
+      // Convert RGB to grayscale brightness
+      const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      const charIndex = Math.floor(brightness * (ASCII_CHARS.length - 1));
+      return ASCII_CHARS[charIndex];
+    }
+
+    function render() {
+      // Draw mirrored video to canvas
+      ctx.save();
+      ctx.scale(-1, 1); // Mirror horizontally
+      ctx.drawImage(video, -ASCII_WIDTH, 0, ASCII_WIDTH, ASCII_HEIGHT);
+      ctx.restore();
+
+      // Get image data
+      const imageData = ctx.getImageData(0, 0, ASCII_WIDTH, ASCII_HEIGHT);
+      const pixels = imageData.data;
+
+      // Convert to ASCII
+      let asciiImage = '';
+      for (let y = 0; y < ASCII_HEIGHT; y++) {
+        for (let x = 0; x < ASCII_WIDTH; x++) {
+          const offset = (y * ASCII_WIDTH + x) * 4;
+          const r = pixels[offset];
+          const g = pixels[offset + 1];
+          const b = pixels[offset + 2];
+          asciiImage += brightnessToASCII(r, g, b);
+        }
+        asciiImage += '\n';
+      }
+
+      output.textContent = asciiImage;
+      requestAnimationFrame(render);
+    }
+
+    init();
+  </script>
+</body>
+</html>
