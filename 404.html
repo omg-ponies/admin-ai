@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" href="/favicon.ico" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>404 - Admin.ai</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0c0e; --panel:#0a0d10; --line:#1b2025; --head:#0d1115; --mono:#cfe7e7; --muted:#7d8a96; --accent:#00ffff; --accent2:#00c6c7; --ok:#36d399; --warn:#ffd166;
+    }
+    html,body{height:100%}
+    body { margin:0; font-family:"IBM Plex Mono", monospace; background:var(--bg); color:var(--mono); display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .hero-terminal { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; width:92%; max-width:900px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+    .term-head { display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #151a1f; background:var(--head); }
+    .dot { width:10px; height:10px; border-radius:50%; background:#2a2f35; }
+    .badge { font-size:11px; color:var(--muted); border:1px solid #262c33; padding:4px 8px; border-radius:6px; display:inline-block; }
+    .term-body { font-size:14px; padding:14px 16px; white-space:pre-wrap; line-height:1.35; max-height:360px; overflow-y:auto; }
+  </style>
+</head>
+<body>
+  <div class="hero-terminal">
+    <div class="term-head">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="badge" id="path-badge">/usr/local/admin</span>
+    </div>
+    <div class="term-body">No such file or directory</div>
+  </div>
+
+  <script>
+    // Get the current path and display it in the badge
+    const path = window.location.pathname.replace(/^\//, '') || 'unknown';
+    document.getElementById('path-badge').textContent = `/usr/local/admin/${path}`;
+  </script>
+</body>
+</html>
