@@ -156,8 +156,9 @@
 
     /* Top Nav */
     .top-nav {
-      background: white;
-      border-bottom: 1px solid #e5e5e5;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
       padding: 20px 40px;
       display: flex;
       align-items: center;
@@ -193,39 +194,6 @@
       background: none;
       cursor: pointer;
       padding: 4px 8px;
-    }
-
-    .nav-center {
-      display: flex;
-      gap: 40px;
-    }
-
-    .nav-link {
-      font-size: 15px;
-      color: #666;
-      text-decoration: none;
-      padding: 8px 0;
-      position: relative;
-      transition: color 0.2s;
-    }
-
-    .nav-link:hover {
-      color: #1a1a1a;
-    }
-
-    .nav-link.active {
-      color: #1a1a1a;
-      font-weight: 500;
-    }
-
-    .nav-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: -21px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: #1a1a1a;
     }
 
     .nav-right {
@@ -268,9 +236,10 @@
 
     .page-subtitle {
       font-family: 'Playfair Display', serif;
-      font-size: 32px;
+      font-size: 24px;
       font-weight: 400;
       color: #666;
+      margin-top: 8px;
     }
 
     .add-btn {
@@ -292,122 +261,125 @@
       background: #000;
     }
 
-    /* Patient Table */
-    .patient-table {
+    /* Patient Grid */
+    .patient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .patient-card {
       background: white;
       border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead {
-      background: #fafafa;
-      border-bottom: 1px solid #e5e5e5;
-    }
-
-    th {
-      text-align: left;
-      padding: 16px 24px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid #f5f5f5;
-      transition: background 0.2s;
-    }
-
-    tbody tr:hover {
-      background: #fafafa;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
       cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid rgba(0,0,0,0.05);
     }
 
-    tbody tr:last-child {
-      border-bottom: none;
+    .patient-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
 
-    td {
-      padding: 20px 24px;
-      font-size: 15px;
+    .patient-card.high-risk {
+      background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+      border-color: rgba(220, 38, 38, 0.2);
+    }
+
+    .patient-card.medium-risk {
+      background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+      border-color: rgba(217, 119, 6, 0.2);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .patient-id {
+      font-size: 14px;
+      font-weight: 600;
       color: #1a1a1a;
     }
 
-    .patient-name {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .patient-avatar {
-      width: 16px;
-      height: 16px;
-      color: #999;
-    }
-
-    .patient-status {
-      display: inline-block;
-      padding: 4px 12px;
-      background: #f0fdf4;
-      color: #16a34a;
+    .risk-badge {
+      padding: 4px 10px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .risk-badge.low { background: #d1fae5; color: #065f46; }
+    .risk-badge.medium { background: #fef3c7; color: #92400e; }
+    .risk-badge.high { background: #fee2e2; color: #991b1b; }
+
+    .condition {
+      font-size: 16px;
+      color: #1a1a1a;
+      margin-bottom: 12px;
       font-weight: 500;
     }
 
-    .patient-status.high-risk {
-      background: #fef2f2;
-      color: #dc2626;
+    .condition-code {
+      color: #666;
+      font-weight: 400;
+      font-size: 13px;
     }
 
-    .patient-status.medium-risk {
-      background: #fef3c7;
-      color: #d97706;
-    }
-
-    .actions {
+    .agent-info {
       display: flex;
-      gap: 12px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f5f5f5;
+      font-size: 13px;
+      color: #666;
     }
 
-    .action-btn {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #e5e5e5;
-      background: white;
-      border-radius: 6px;
-      cursor: pointer;
+    .agent-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1a1a1a;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
     }
 
-    .action-btn:hover {
-      border-color: #1a1a1a;
-      background: #fafafa;
-    }
-
-    .add-patient-row {
-      padding: 20px 24px;
-      color: #999;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
+    .memory-indicator {
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 4px;
+      padding: 3px 8px;
+      background: #ede9fe;
+      border-radius: 10px;
+      font-size: 10px;
+      color: #6b21a8;
+      font-weight: 500;
+      margin-left: auto;
     }
 
-    .add-patient-row:hover {
-      background: #fafafa;
-      color: #1a1a1a;
+    .memory-icon {
+      width: 8px;
+      height: 8px;
+      background: #9333ea;
+      border-radius: 50%;
+      animation: glow 2s ease infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 0px #9333ea; }
+      50% { box-shadow: 0 0 6px #9333ea; }
     }
 
     /* Modal */
@@ -418,7 +390,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.5);
       z-index: 1000;
       align-items: center;
       justify-content: center;
@@ -433,23 +405,26 @@
       background: white;
       border-radius: 20px;
       width: 100%;
-      max-width: 1200px;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-      padding: 40px;
+      max-width: 1400px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      overflow: hidden;
     }
 
     .modal-header {
-      margin-bottom: 32px;
+      padding: 24px 32px;
+      border-bottom: 1px solid #e5e5e5;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     .modal-title {
       font-family: 'Playfair Display', serif;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 400;
       color: #1a1a1a;
     }
@@ -470,52 +445,40 @@
       color: #1a1a1a;
     }
 
-    .patient-details {
+    .modal-body {
+      flex: 1;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      margin-bottom: 40px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: #e5e5e5;
+      overflow: hidden;
     }
 
-    .detail-group {
-      margin-bottom: 24px;
-    }
-
-    .detail-label {
-      font-size: 13px;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-
-    .detail-value {
-      font-size: 16px;
-      color: #1a1a1a;
-    }
-
-    .conversation-section {
-      margin-top: 40px;
-      padding-top: 40px;
-      border-top: 1px solid #e5e5e5;
-    }
-
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 24px;
-      font-weight: 400;
-      margin-bottom: 24px;
-      color: #1a1a1a;
-    }
-
-    .chat-messages {
-      max-height: 400px;
+    .modal-panel {
+      background: white;
       overflow-y: auto;
-      padding: 20px;
-      background: #fafafa;
-      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
     }
 
+    .panel-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .panel-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* Conversation Panel */
     .chat-message {
       margin-bottom: 20px;
       display: flex;
@@ -531,36 +494,237 @@
     }
 
     .message-bubble {
-      max-width: 70%;
+      max-width: 75%;
       padding: 12px 16px;
-      border-radius: 12px;
+      border-radius: 16px;
       font-size: 14px;
       line-height: 1.6;
     }
 
     .chat-message.patient .message-bubble {
-      background: white;
-      border: 1px solid #e5e5e5;
+      background: #f5f5f5;
       color: #1a1a1a;
+      border-bottom-left-radius: 4px;
     }
 
     .chat-message.ai .message-bubble {
       background: #1a1a1a;
       color: white;
+      border-bottom-right-radius: 4px;
     }
 
     .message-time {
-      font-size: 12px;
+      font-size: 11px;
       color: #999;
       margin-top: 6px;
     }
 
-    @media (max-width: 768px) {
-      .nav-center {
-        display: none;
-      }
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 12px 16px;
+      background: #f5f5f5;
+      border-radius: 16px;
+      width: fit-content;
+    }
 
-      .patient-details {
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #999;
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+
+    /* Reasoning Panel */
+    .reasoning-item {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .reasoning-item:last-child {
+      border-bottom: none;
+    }
+
+    .reasoning-agent {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .reasoning-agent-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .reasoning-agent-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .reasoning-step {
+      font-size: 13px;
+      color: #4a5568;
+      margin: 6px 0 6px 34px;
+      line-height: 1.6;
+    }
+
+    .reasoning-step::before {
+      content: "→";
+      color: #1a1a1a;
+      margin-right: 8px;
+      font-weight: 600;
+    }
+
+    .confidence-bar {
+      margin: 12px 0 0 34px;
+      height: 6px;
+      background: #f5f5f5;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a1a1a, #4a5568);
+      transition: width 0.5s ease;
+    }
+
+    .confidence-label {
+      font-size: 11px;
+      color: #999;
+      margin: 6px 0 0 34px;
+    }
+
+    /* EMR Panel */
+    .vm-container {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 8px;
+      margin-bottom: 20px;
+    }
+
+    .vm-header {
+      background: #2d2d2d;
+      padding: 10px 14px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .vm-title {
+      font-size: 11px;
+      color: #999;
+      font-family: monospace;
+    }
+
+    .vm-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #10b981;
+    }
+
+    .vm-status-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .vm-screen {
+      background: white;
+      aspect-ratio: 16/10;
+      border-radius: 0 0 8px 8px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%);
+      color: #999;
+      font-size: 13px;
+    }
+
+    .vm-cursor {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+      animation: moveCursor 8s ease-in-out infinite;
+    }
+
+    @keyframes moveCursor {
+      0%, 100% { top: 20%; left: 30%; }
+      25% { top: 40%; left: 60%; }
+      50% { top: 60%; left: 40%; }
+      75% { top: 30%; left: 70%; }
+    }
+
+    .emr-activity {
+      margin-top: 20px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      font-size: 13px;
+      color: #4a5568;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .activity-icon {
+      color: #10b981;
+      font-weight: 700;
+    }
+
+    .activity-text {
+      flex: 1;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: #999;
+    }
+
+    @media (max-width: 1200px) {
+      .modal-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .patient-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -603,12 +767,6 @@
         </select>
       </div>
 
-      <div class="nav-center">
-        <a href="#" class="nav-link active">Consultation</a>
-        <a href="#" class="nav-link">Three Party</a>
-        <a href="#" class="nav-link">Patients</a>
-      </div>
-
       <div class="nav-right">
         <a href="#">API Keys</a>
         <a href="#">Users</a>
@@ -619,37 +777,15 @@
     <div class="main-content">
       <div class="page-header">
         <div>
-          <div class="page-title">Consulation</div>
-          <div class="page-subtitle">Choose a patient</div>
+          <div class="page-title">Live Patient Encounters</div>
+          <div class="page-subtitle">36 active sessions</div>
         </div>
         <button class="add-btn" onclick="alert('Add patient')">
           <span>+</span> Add new patient
         </button>
       </div>
 
-      <div class="patient-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Date of Birth</th>
-              <th>Condition</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="patient-tbody"></tbody>
-        </table>
-        <div class="add-patient-row" onclick="alert('Add patient')">
-          <div class="nav-logo" style="width: 20px; height: 20px;">
-            <span style="width: 8px; height: 8px;"></span>
-            <span style="width: 8px; height: 8px;"></span>
-            <span style="width: 8px; height: 8px;"></span>
-            <span style="width: 8px; height: 8px;"></span>
-          </div>
-          Add new patient
-        </div>
-      </div>
+      <div class="patient-grid" id="patient-grid"></div>
     </div>
   </div>
 
@@ -660,37 +796,41 @@
         <h2 class="modal-title" id="modal-title">Patient Details</h2>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
+      <div class="modal-body">
+        <!-- Conversation Panel -->
+        <div class="modal-panel">
+          <div class="panel-header">Conversation</div>
+          <div class="panel-content" id="conversation-panel"></div>
+        </div>
 
-      <div class="patient-details">
-        <div>
-          <div class="detail-group">
-            <div class="detail-label">Patient ID</div>
-            <div class="detail-value" id="detail-id">—</div>
-          </div>
-          <div class="detail-group">
-            <div class="detail-label">Condition</div>
-            <div class="detail-value" id="detail-condition">—</div>
-          </div>
-          <div class="detail-group">
-            <div class="detail-label">Date of Birth</div>
-            <div class="detail-value" id="detail-dob">—</div>
+        <!-- AI Reasoning Panel -->
+        <div class="modal-panel">
+          <div class="panel-header">AI Reasoning</div>
+          <div class="panel-content" id="reasoning-panel"></div>
+        </div>
+
+        <!-- EMR Computer Use Panel -->
+        <div class="modal-panel">
+          <div class="panel-header">Computer Use • EMR</div>
+          <div class="panel-content" id="emr-panel">
+            <div class="vm-container">
+              <div class="vm-header">
+                <span class="vm-title">VM-1847 • Epic MyChart</span>
+                <div class="vm-status">
+                  <span class="vm-status-dot"></span>
+                  ACTIVE
+                </div>
+              </div>
+              <div class="vm-screen">
+                EMR Interface
+                <svg class="vm-cursor" viewBox="0 0 16 16">
+                  <path d="M0 0 L0 14 L4 10 L7 16 L9 15 L6 9 L11 9 Z" fill="#1a1a1a" />
+                </svg>
+              </div>
+            </div>
+            <div class="emr-activity" id="emr-activity"></div>
           </div>
         </div>
-        <div>
-          <div class="detail-group">
-            <div class="detail-label">Status</div>
-            <div class="detail-value" id="detail-status">—</div>
-          </div>
-          <div class="detail-group">
-            <div class="detail-label">Agent</div>
-            <div class="detail-value" id="detail-agent">—</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="conversation-section">
-        <h3 class="section-title">Conversation</h3>
-        <div class="chat-messages" id="chat-messages"></div>
       </div>
     </div>
   </div>
@@ -734,104 +874,209 @@
       {code:'J45.909', name:'Asthma', severity:'medium'},
       {code:'F32.9', name:'Depression', severity:'low'},
       {code:'N39.0', name:'UTI', severity:'low'},
-      {code:'M54.5', name:'Low Back Pain', severity:'low'}
+      {code:'M54.5', name:'Low Back Pain', severity:'low'},
+      {code:'K21.0', name:'GERD', severity:'low'}
     ];
 
-    const PATIENTS = ['PT-1847', 'PT-2394', 'PT-8832', 'PT-4721', 'PT-9234'];
-    let patients = [];
+    const AGENTS = ['Clinician', 'Admin', 'QA', 'RCM'];
+    const PATIENTS = ['PT-1847', 'PT-2394', 'PT-8832', 'PT-4721', 'PT-9234', 'PT-3821', 'PT-7612', 'PT-5493'];
+    let tiles = [];
 
     function initDashboard() {
-      generatePatients();
-      renderPatients();
+      generateTiles();
+      renderTiles();
     }
 
-    function generatePatients() {
-      patients = [];
-      const highCount = rnd(2,3);
-      const mediumCount = rnd(5,8);
-      const lowCount = 15 - highCount - mediumCount;
+    function generateTiles() {
+      tiles = [];
+      const highCount = rnd(2, 3);
+      const mediumCount = rnd(10, 14);
+      const lowCount = 36 - highCount - mediumCount;
 
       for (let i = 0; i < highCount; i++) {
         const cond = pick(CONDITIONS.filter(c => c.severity === 'high'));
-        patients.push(createPatient(cond, 'high'));
+        tiles.push(createTile(cond, 'high'));
       }
       for (let i = 0; i < mediumCount; i++) {
         const cond = pick(CONDITIONS.filter(c => c.severity === 'medium'));
-        patients.push(createPatient(cond, 'medium'));
+        tiles.push(createTile(cond, 'medium'));
       }
       for (let i = 0; i < lowCount; i++) {
         const cond = pick(CONDITIONS.filter(c => c.severity === 'low'));
-        patients.push(createPatient(cond, 'low'));
+        tiles.push(createTile(cond, 'low'));
       }
     }
 
-    function createPatient(cond, risk) {
+    function createTile(cond, risk) {
       return {
         id: pick(PATIENTS) + '-' + rnd(100,999),
-        name: 'Patient ' + rnd(1000,9999),
-        dob: '1985-08-16',
         condition: cond,
+        agent: pick(AGENTS),
         risk,
-        agent: pick(['Clinician', 'Admin', 'QA'])
+        hasMemory: Math.random() > 0.6
       };
     }
 
-    function renderPatients() {
-      const tbody = document.getElementById('patient-tbody');
-      tbody.innerHTML = patients.map(p => `
-        <tr onclick='openPatient(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
-          <td>
-            <div class="patient-name">
-              <svg class="patient-avatar" viewBox="0 0 16 16" fill="currentColor">
-                <circle cx="8" cy="5" r="3"/>
-                <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6v1H2v-1z"/>
-              </svg>
-              ${p.name}
-            </div>
-          </td>
-          <td>${p.dob}</td>
-          <td>${p.condition.code} ${p.condition.name}</td>
-          <td><span class="patient-status ${p.risk}-risk">${p.risk}</span></td>
-          <td>
-            <div class="actions">
-              <button class="action-btn" title="Edit">✎</button>
-              <button class="action-btn" title="Copy">⎘</button>
-              <button class="action-btn" title="Call">☎</button>
-            </div>
-          </td>
-        </tr>
+    function renderTiles() {
+      const grid = document.getElementById('patient-grid');
+      grid.innerHTML = tiles.map(tile => `
+        <div class="patient-card ${tile.risk}-risk" onclick='openPatient(${JSON.stringify(tile).replace(/'/g, "&apos;")})'>
+          <div class="card-header">
+            <span class="patient-id">${tile.id}</span>
+            <span class="risk-badge ${tile.risk}">${tile.risk}</span>
+          </div>
+          <div class="condition">
+            ${tile.condition.name}
+            <div class="condition-code">${tile.condition.code}</div>
+          </div>
+          <div class="agent-info">
+            <div class="agent-icon">AI</div>
+            ${tile.agent} Agent
+            ${tile.hasMemory ? '<span class="memory-indicator"><span class="memory-icon"></span>Context</span>' : ''}
+          </div>
+        </div>
       `).join('');
     }
 
     // Modal
-    function openPatient(patient) {
-      document.getElementById('modal-title').textContent = patient.name;
-      document.getElementById('detail-id').textContent = patient.id;
-      document.getElementById('detail-condition').textContent = `${patient.condition.code} ${patient.condition.name}`;
-      document.getElementById('detail-dob').textContent = patient.dob;
-      document.getElementById('detail-status').innerHTML = `<span class="patient-status ${patient.risk}-risk">${patient.risk}</span>`;
-      document.getElementById('detail-agent').textContent = patient.agent + ' Agent';
+    let currentPatient = null;
 
-      const messages = [
-        {type: 'patient', text: "I've been experiencing " + patient.condition.name.toLowerCase(), time: '14:23'},
-        {type: 'ai', text: "I understand. Let me review your symptoms and medical history.", time: '14:24'},
-        {type: 'patient', text: "It started a few days ago", time: '14:24'},
-        {type: 'ai', text: "Based on your symptoms, I'm diagnosing this as " + patient.condition.code + ". I'll prepare a treatment plan.", time: '14:25'}
-      ];
-
-      const chatEl = document.getElementById('chat-messages');
-      chatEl.innerHTML = messages.map(m => `
-        <div class="chat-message ${m.type}">
-          <div class="message-bubble">${m.text}</div>
-          <div class="message-time">${m.time}</div>
-        </div>
-      `).join('');
-
+    function openPatient(tile) {
+      currentPatient = tile;
+      document.getElementById('modal-title').textContent = `${tile.id} • ${tile.condition.code}`;
       document.getElementById('patient-modal').classList.add('active');
+
+      startConversationSimulation();
+      startReasoningSimulation();
+      startEMRSimulation();
     }
 
     function closeModal() {
       document.getElementById('patient-modal').classList.remove('active');
+      currentPatient = null;
+    }
+
+    // Conversation Simulation
+    function startConversationSimulation() {
+      const panel = document.getElementById('conversation-panel');
+      const messages = [
+        {type: 'patient', text: "I've been having chest pain and shortness of breath", time: '14:23'},
+        {type: 'ai', text: "I understand. Can you describe the chest pain? Is it sharp, dull, or pressure-like?", time: '14:23'},
+        {type: 'patient', text: "It feels like pressure, and it gets worse when I exert myself", time: '14:24'},
+        {type: 'ai', text: "How long have you been experiencing these symptoms?", time: '14:24'},
+        {type: 'patient', text: "About 3 days now", time: '14:24'},
+        {type: 'ai', text: "Thank you. I'm going to recommend some tests and get you scheduled with a cardiologist.", time: '14:25'}
+      ];
+
+      panel.innerHTML = '';
+      let i = 0;
+
+      function addMessage() {
+        if (i < messages.length) {
+          const msg = messages[i];
+          panel.innerHTML += `
+            <div class="chat-message ${msg.type}">
+              <div class="message-bubble">${msg.text}</div>
+              <div class="message-time">${msg.time}</div>
+            </div>
+          `;
+          panel.scrollTop = panel.scrollHeight;
+          i++;
+          setTimeout(addMessage, 1500);
+        } else {
+          panel.innerHTML += `<div class="chat-message ai"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+        }
+      }
+
+      addMessage();
+    }
+
+    // Reasoning Simulation
+    function startReasoningSimulation() {
+      const panel = document.getElementById('reasoning-panel');
+      const steps = [
+        {agent: 'Clinician', steps: [
+          'Analyzing symptoms: chest pain + shortness of breath',
+          'Cross-referencing patient history',
+          'Symptom severity assessment: HIGH',
+          'Differential diagnosis complete'
+        ], confidence: 94},
+        {agent: 'QA', steps: [
+          'Validating ICD-10 code selection',
+          'Checking clinical guidelines compliance',
+          'Reviewing recommended treatment plan'
+        ], confidence: 97},
+        {agent: 'Admin', steps: [
+          'Preparing EHR documentation',
+          'Scheduling follow-up appointments',
+          'Processing referral to cardiology'
+        ], confidence: 100}
+      ];
+
+      panel.innerHTML = '';
+      let agentIdx = 0;
+
+      function addReasoning() {
+        if (agentIdx < steps.length) {
+          const agent = steps[agentIdx];
+          let html = `
+            <div class="reasoning-item">
+              <div class="reasoning-agent">
+                <div class="reasoning-agent-icon">AI</div>
+                <div class="reasoning-agent-name">${agent.agent} Agent</div>
+              </div>
+          `;
+          agent.steps.forEach(step => {
+            html += `<div class="reasoning-step">${step}</div>`;
+          });
+          html += `
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width:${agent.confidence}%"></div>
+              </div>
+              <div class="confidence-label">Confidence: ${agent.confidence}%</div>
+            </div>
+          `;
+          panel.innerHTML += html;
+          agentIdx++;
+          setTimeout(addReasoning, 2000);
+        }
+      }
+
+      addReasoning();
+    }
+
+    // EMR Activity Simulation
+    function startEMRSimulation() {
+      const panel = document.getElementById('emr-activity');
+      const activities = [
+        {text: 'Opened patient chart', time: '2s ago'},
+        {text: 'Retrieved medical history', time: '4s ago'},
+        {text: 'Documenting chief complaint', time: '7s ago'},
+        {text: 'Updating vitals and assessment', time: '10s ago'},
+        {text: 'Creating order: ECG', time: '13s ago'},
+        {text: 'Creating order: Chest X-Ray', time: '15s ago'},
+        {text: 'Submitting referral to cardiology', time: '18s ago'}
+      ];
+
+      panel.innerHTML = '';
+      let i = 0;
+
+      function addActivity() {
+        if (i < activities.length) {
+          const act = activities[i];
+          panel.innerHTML += `
+            <div class="activity-item">
+              <span class="activity-icon">✓</span>
+              <span class="activity-text">${act.text}</span>
+              <span class="activity-time">${act.time}</span>
+            </div>
+          `;
+          i++;
+          setTimeout(addActivity, 2000);
+        }
+      }
+
+      addActivity();
     }
   </script>
 </body>
