@@ -324,6 +324,263 @@
     .risk-badge.medium { background: #fef3c7; color: #92400e; }
     .risk-badge.high { background: #fee2e2; color: #991b1b; }
 
+    /* 4-Tier Risk System */
+    .risk-badge.t1 { background: #d1fae5; color: #065f46; }
+    .risk-badge.t2 { background: #fef3c7; color: #92400e; }
+    .risk-badge.t3 { background: #fed7aa; color: #9a3412; }
+    .risk-badge.t4 { background: #fee2e2; color: #991b1b; }
+
+    /* Autonomy Level Badges */
+    .autonomy-badge {
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    .autonomy-badge.l0 { background: #e5e7eb; color: #4b5563; }
+    .autonomy-badge.l1 { background: #dbeafe; color: #1e40af; }
+    .autonomy-badge.l2 { background: #ddd6fe; color: #6b21a8; }
+    .autonomy-badge.l3 { background: #fef3c7; color: #92400e; }
+    .autonomy-badge.l4 { background: #d1fae5; color: #065f46; }
+
+    /* Pending Approvals Section */
+    .approvals-section {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      margin-bottom: 32px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .approvals-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .approvals-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: #1a1a1a;
+    }
+
+    .approvals-count {
+      background: #ef4444;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      animation: pulse-count 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-count {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .approval-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border-left: 4px solid #e5e5e5;
+      transition: all 0.3s;
+    }
+
+    .approval-item:hover {
+      background: #f5f5f5;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .approval-item.urgent {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .approval-item.emergent {
+      border-left-color: #ef4444;
+      background: #fef2f2;
+      animation: urgent-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes urgent-pulse {
+      0%, 100% { box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2); }
+      50% { box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4); }
+    }
+
+    .approval-patient {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 0 0 120px;
+    }
+
+    .approval-patient-id {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .approval-patient-name {
+      font-size: 11px;
+      color: #666;
+    }
+
+    .approval-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .approval-action {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .approval-reason {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .approval-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 0 0 auto;
+    }
+
+    .sla-timer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .sla-timer.warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .sla-timer.critical {
+      background: #fee2e2;
+      color: #991b1b;
+      animation: timer-pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes timer-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .sla-icon {
+      font-size: 14px;
+    }
+
+    .urgency-badge {
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .urgency-badge.routine {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
+    .urgency-badge.urgent {
+      background: #fed7aa;
+      color: #9a3412;
+    }
+
+    .urgency-badge.emergent {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .approval-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .approve-btn, .reject-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .approve-btn {
+      background: #10b981;
+      color: white;
+    }
+
+    .approve-btn:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+
+    .reject-btn {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .reject-btn:hover {
+      background: #e5e7eb;
+    }
+
+    /* Escalation Alert */
+    .escalation-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #991b1b;
+      animation: escalation-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes escalation-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      50% { transform: scale(1.03); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
+    }
+
+    .escalation-icon {
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
     .condition {
       font-size: 16px;
       color: #1a1a1a;
@@ -1028,6 +1285,15 @@
         </button>
       </div>
 
+      <!-- Pending Approvals Queue -->
+      <div class="approvals-section" id="approvals-section">
+        <div class="approvals-header">
+          <h2 class="approvals-title">Pending Approvals</h2>
+          <span class="approvals-count" id="approvals-count">0</span>
+        </div>
+        <div id="approvals-queue"></div>
+      </div>
+
       <div class="patient-grid" id="patient-grid"></div>
     </div>
   </div>
@@ -1177,10 +1443,41 @@
       {agent: 'Admin', text: 'complete', class: 'complete', step: 3}
     ];
 
+    // Autonomy levels
+    const AUTONOMY_LEVELS = ['L0', 'L1', 'L2', 'L3', 'L4'];
+    const AUTONOMY_NAMES = {
+      'L0': 'Shadow',
+      'L1': 'Copilot',
+      'L2': 'Supervised',
+      'L3': 'Guarded',
+      'L4': 'Full Auto'
+    };
+
+    // Risk tiers
+    const RISK_TIERS = ['T1', 'T2', 'T3', 'T4'];
+
+    // Action types
+    const ACTION_TYPES = [
+      {action: 'Order: CBC, BMP labs', tier: 'T2', urgency: 'routine'},
+      {action: 'Prescribe: Lisinopril 10mg', tier: 'T2', urgency: 'routine'},
+      {action: 'Prescribe: Amoxicillin 500mg', tier: 'T2', urgency: 'routine'},
+      {action: 'Order: Chest X-Ray', tier: 'T2', urgency: 'urgent'},
+      {action: 'Prescribe: Oxycodone 5mg', tier: 'T3', urgency: 'urgent'},
+      {action: 'Referral: Cardiology consult', tier: 'T3', urgency: 'urgent'},
+      {action: 'Prescribe: Warfarin 5mg', tier: 'T4', urgency: 'emergent'},
+      {action: 'Diagnosis: Suspected MI', tier: 'T4', urgency: 'emergent'}
+    ];
+
+    let tiles = [];
+    let approvals = [];
+
     function initDashboard() {
       generateTiles();
       renderTiles();
+      generateApprovals();
+      renderApprovals();
       startLiveUpdates();
+      startSLATimers();
     }
 
     function generateTiles() {
@@ -1207,6 +1504,8 @@
       const now = Date.now();
       const stageIndex = rnd(0, PIPELINE_STAGES.length - 1);
       const stage = PIPELINE_STAGES[stageIndex];
+      const autonomyLevel = pick(AUTONOMY_LEVELS);
+      const hasEscalation = Math.random() > 0.85;
 
       return {
         id: pick(PATIENTS) + '-' + rnd(100,999),
@@ -1217,8 +1516,125 @@
         timestamp: now - rnd(5000, 120000), // 5s to 2min ago
         confidence: rnd(60, 98),
         stageStartTime: now - rnd(2000, 15000),
-        isNew: false
+        isNew: false,
+        autonomyLevel: autonomyLevel,
+        hasEscalation: hasEscalation
       };
+    }
+
+    // Approvals management
+    function generateApprovals() {
+      approvals = [];
+      const count = rnd(3, 8);
+
+      for (let i = 0; i < count; i++) {
+        const actionData = pick(ACTION_TYPES);
+        const patientTile = pick(tiles);
+        const now = Date.now();
+        const ageSeconds = rnd(30, 600); // 30s to 10min ago
+        const slaSeconds = actionData.urgency === 'emergent' ? 300 : (actionData.urgency === 'urgent' ? 900 : 1800); // 5min, 15min, 30min
+
+        approvals.push({
+          id: 'APR-' + rnd(1000, 9999),
+          patientId: patientTile.id,
+          patientName: patientTile.condition.name,
+          action: actionData.action,
+          reason: `Agent confidence ${patientTile.confidence}% • ${actionData.tier} action requires review`,
+          tier: actionData.tier,
+          urgency: actionData.urgency,
+          createdAt: now - (ageSeconds * 1000),
+          slaDeadline: now - (ageSeconds * 1000) + (slaSeconds * 1000),
+          condition: patientTile.condition.code
+        });
+      }
+
+      // Sort by urgency (emergent first, then urgent, then routine)
+      approvals.sort((a, b) => {
+        const urgencyOrder = {emergent: 0, urgent: 1, routine: 2};
+        return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
+      });
+    }
+
+    function formatSLATime(deadline) {
+      const remaining = deadline - Date.now();
+      const seconds = Math.floor(remaining / 1000);
+
+      if (seconds < 0) return {text: 'OVERDUE', class: 'critical'};
+      if (seconds < 60) return {text: `${seconds}s`, class: 'critical'};
+
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 5) return {text: `${minutes}m`, class: 'critical'};
+      if (minutes < 10) return {text: `${minutes}m`, class: 'warning'};
+      return {text: `${minutes}m`, class: ''};
+    }
+
+    function renderApprovals() {
+      const queue = document.getElementById('approvals-queue');
+      const countBadge = document.getElementById('approvals-count');
+      const section = document.getElementById('approvals-section');
+      const subtitle = document.querySelector('.page-subtitle');
+
+      // Update page subtitle
+      if (subtitle) {
+        subtitle.textContent = `${tiles.length} active sessions • ${approvals.length} pending approvals`;
+      }
+
+      if (approvals.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      countBadge.textContent = approvals.length;
+
+      queue.innerHTML = approvals.map(approval => {
+        const sla = formatSLATime(approval.slaDeadline);
+        return `
+          <div class="approval-item ${approval.urgency}" data-approval-id="${approval.id}">
+            <div class="approval-patient">
+              <div class="approval-patient-id">${approval.patientId}</div>
+              <div class="approval-patient-name">${approval.condition}</div>
+            </div>
+            <div class="approval-content">
+              <div class="approval-action">${approval.action}</div>
+              <div class="approval-reason">${approval.reason}</div>
+            </div>
+            <div class="approval-meta">
+              <span class="risk-badge ${approval.tier.toLowerCase()}">${approval.tier}</span>
+              <span class="urgency-badge ${approval.urgency}">${approval.urgency}</span>
+              <div class="sla-timer ${sla.class}" data-deadline="${approval.slaDeadline}">
+                <span class="sla-icon">⏱</span>
+                <span class="sla-time">${sla.text}</span>
+              </div>
+            </div>
+            <div class="approval-actions">
+              <button class="approve-btn" onclick="approveAction('${approval.id}')">Approve</button>
+              <button class="reject-btn" onclick="rejectAction('${approval.id}')">Reject</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function approveAction(approvalId) {
+      approvals = approvals.filter(a => a.id !== approvalId);
+      renderApprovals();
+    }
+
+    function rejectAction(approvalId) {
+      approvals = approvals.filter(a => a.id !== approvalId);
+      renderApprovals();
+    }
+
+    function startSLATimers() {
+      setInterval(() => {
+        document.querySelectorAll('.sla-timer').forEach(timer => {
+          const deadline = parseInt(timer.dataset.deadline);
+          const sla = formatSLATime(deadline);
+          timer.className = `sla-timer ${sla.class}`;
+          timer.querySelector('.sla-time').textContent = sla.text;
+        });
+      }, 1000);
     }
 
     function formatTimestamp(timestamp) {
@@ -1244,9 +1660,13 @@
         return `
         <div class="patient-card ${tile.risk}-risk ${tile.isNew ? 'new-arrival' : ''}" data-tile-index="${idx}" onclick='openPatient(${JSON.stringify(tile).replace(/'/g, "&apos;")})'>
           <div class="card-header">
-            <span class="patient-id">${tile.id}</span>
+            <div>
+              <span class="patient-id">${tile.id}</span>
+              <span class="autonomy-badge ${tile.autonomyLevel.toLowerCase()}">${tile.autonomyLevel}</span>
+            </div>
             <span class="risk-badge ${tile.risk}">${tile.risk}</span>
           </div>
+          ${tile.hasEscalation ? '<div class="escalation-badge"><span class="escalation-icon"></span>ESCALATION</div>' : ''}
           <div class="activity-status ${stage.class}">
             ${isProcessing ? `<span class="status-dot"></span>` : ''}
             ${stage.agent} ${stage.text}${isProcessing ? ' • ' + stageTime : ''}
@@ -1351,6 +1771,37 @@
           }
         }
       }, 10000);
+
+      // Occasionally add new approvals
+      setInterval(() => {
+        if (Math.random() > 0.7 && approvals.length < 12 && tiles.length > 0) {
+          const actionData = pick(ACTION_TYPES);
+          const patientTile = pick(tiles);
+          const now = Date.now();
+          const slaSeconds = actionData.urgency === 'emergent' ? 300 : (actionData.urgency === 'urgent' ? 900 : 1800);
+
+          approvals.push({
+            id: 'APR-' + rnd(1000, 9999),
+            patientId: patientTile.id,
+            patientName: patientTile.condition.name,
+            action: actionData.action,
+            reason: `Agent confidence ${patientTile.confidence}% • ${actionData.tier} action requires review`,
+            tier: actionData.tier,
+            urgency: actionData.urgency,
+            createdAt: now,
+            slaDeadline: now + (slaSeconds * 1000),
+            condition: patientTile.condition.code
+          });
+
+          // Sort by urgency
+          approvals.sort((a, b) => {
+            const urgencyOrder = {emergent: 0, urgent: 1, routine: 2};
+            return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
+          });
+
+          renderApprovals();
+        }
+      }, 15000);
     }
 
     // Modal
