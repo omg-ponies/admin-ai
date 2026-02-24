@@ -4,570 +4,773 @@
   <link rel="icon" href="/favicon.ico" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin.ai — Operations Center</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <title>Admin.ai — Operations</title>
   <style>
-    :root{
-      --bg:#0b0c0e; --panel:#0a0d10; --line:#1b2025; --head:#0d1115;
-      --mono:#cfe7e7; --muted:#7d8a96; --accent:#00ffff; --accent2:#00c6c7;
-      --ok:#36d399; --warn:#ffd166; --err:#ff6b6b; --purple:#a78bfa;
-    }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    html,body{height:100%;overflow:hidden;}
-    body{
-      font-family:"IBM Plex Mono",monospace;
-      background:var(--bg);
-      color:var(--mono);
-      display:grid;
-      grid-template-rows:44px 1fr 200px;
-      grid-template-columns:240px 1fr 260px;
-      grid-template-areas:
-        "header header header"
-        "metrics feed agents"
-        "pipeline pipeline billing";
-      gap:5px;
-      padding:5px;
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f8f9fb;
+      color: #1a202c;
+      overflow: hidden;
+      height: 100vh;
     }
 
-    /* Header */
-    #header{
-      grid-area:header;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 14px;
-      background:var(--head);
-      border:1px solid var(--line);
-      border-radius:8px;
-      font-size:12px;
+    /* ─── LOGIN SCREEN ─── */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-    #header .brand{color:var(--accent);font-weight:600;font-size:13px;}
-    #header .center{color:var(--muted);font-size:11px;letter-spacing:2px;}
-    #header .right{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;}
-    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;animation:pulse 2s ease infinite;}
-    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
-    /* Panels */
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:10px;
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
+    .login-card {
+      background: white;
+      padding: 48px 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
     }
-    .panel-head{
-      display:flex;
-      align-items:center;
-      gap:7px;
-      padding:7px 10px;
-      border-bottom:1px solid #151a1f;
-      background:var(--head);
-      flex-shrink:0;
+
+    .login-logo {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
     }
-    .dot{width:8px;height:8px;border-radius:50%;background:#2a2f35;}
-    .badge{font-size:10px;color:var(--muted);border:1px solid #262c33;padding:3px 7px;border-radius:5px;}
-    .panel-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;font-size:12px;line-height:1.4;}
 
-    /* Metrics panel */
-    #metrics{grid-area:metrics;}
-    .metric-card{
-      border:1px solid var(--line);
-      border-radius:6px;
-      padding:10px;
-      margin-bottom:6px;
+    .login-subtitle {
+      font-size: 14px;
+      color: #718096;
+      margin-bottom: 32px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
-    .metric-card:last-child{margin-bottom:0;}
-    .metric-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
-    .metric-value{font-size:22px;font-weight:600;color:var(--accent);text-shadow:0 0 8px rgba(0,255,255,.2);}
-    .metric-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-    .metric-value.ok{color:var(--ok);}
-    .metric-value.warn{color:var(--warn);}
 
-    /* Feed panel */
-    #feed{grid-area:feed;}
-    #feed .panel-body{font-size:12px;white-space:pre-wrap;line-height:1.35;}
-    .row{display:flex;gap:6px;align-items:baseline;margin:0 0 2px;}
-    .ts{color:#80919a;opacity:.75;font-size:10px;flex-shrink:0;}
-    .prompt{color:var(--accent2);}
-    .feed-ok{color:var(--ok);}
-    .feed-warn{color:var(--warn);}
-    .feed-err{color:var(--err);}
-    .caret{display:inline-block;width:7px;height:1em;background:var(--accent);animation:blink 1.1s steps(1) infinite;}
-    @keyframes blink{50%{opacity:0}}
-    .agent-cln{color:var(--accent);}
-    .agent-adm{color:var(--mono);}
-    .agent-qa{color:var(--purple);}
-    .agent-rcm{color:var(--warn);}
-
-    /* Agents panel */
-    #agents{grid-area:agents;}
-    .agent-card{
-      border:1px solid var(--line);
-      border-radius:6px;
-      padding:8px;
-      margin-bottom:5px;
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.2s;
+      margin-bottom: 16px;
     }
-    .agent-card:last-child{margin-bottom:0;}
-    .agent-name{font-size:10px;letter-spacing:1px;font-weight:600;margin-bottom:4px;}
-    .agent-name.cln{color:var(--accent);}
-    .agent-name.adm{color:var(--mono);}
-    .agent-name.qa{color:var(--purple);}
-    .agent-name.rcm{color:var(--warn);}
-    .agent-stat{font-size:10px;color:var(--muted);margin:2px 0;}
-    .load-bar{display:inline-block;font-size:10px;letter-spacing:-1px;}
-    .load-fill{color:var(--accent);}
-    .load-empty{color:#1b2025;}
 
-    /* Pipeline panel */
-    #pipeline{grid-area:pipeline;}
-    #pipeline .panel-body{display:flex;align-items:center;justify-content:center;gap:0;font-size:11px;}
-    .pipe-stage{text-align:center;min-width:90px;}
-    .pipe-box{border:1px solid var(--line);border-radius:5px;padding:6px 8px;margin:4px auto;min-width:70px;}
-    .pipe-count{font-size:18px;font-weight:600;color:var(--accent);text-shadow:0 0 6px rgba(0,255,255,.15);}
-    .pipe-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
-    .pipe-rate{font-size:9px;color:var(--muted);margin-top:3px;}
-    .pipe-arrow{color:#2a2f35;font-size:16px;padding:0 4px;align-self:center;margin-top:-10px;}
-    .pipe-arrow.active{color:var(--accent);transition:color .3s;}
+    .login-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
 
-    /* Billing panel */
-    #billing{grid-area:billing;}
-    .billing-summary{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);}
-    .billing-row{display:flex;justify-content:space-between;font-size:10px;margin:2px 0;}
-    .billing-row .label{color:var(--muted);}
-    .billing-log{font-size:10px;}
-    .billing-log div{margin:2px 0;}
-    .clm-ok{color:var(--ok);}
-    .clm-warn{color:var(--warn);}
-    .clm-err{color:var(--err);}
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-    /* Mobile fallback */
-    @media(max-width:960px){
-      body{
-        grid-template-columns:1fr;
-        grid-template-rows:44px auto 1fr auto auto auto;
-        grid-template-areas:"header" "metrics" "feed" "agents" "pipeline" "billing";
-        overflow-y:auto;
-        height:auto;
-      }
-      #feed .panel-body{max-height:50vh;}
-      #pipeline .panel-body{flex-wrap:wrap;}
+    .login-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-error {
+      color: #e53e3e;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ─── MAIN DASHBOARD ─── */
+    #dashboard {
+      display: none;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    /* Top Nav */
+    .top-nav {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .nav-brand {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 14px;
+      color: #718096;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #16a34a;
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Main Layout */
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Tile Grid */
+    .tiles-section {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .tiles-header {
+      margin-bottom: 20px;
+    }
+
+    .tiles-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+
+    .tiles-header p {
+      font-size: 13px;
+      color: #718096;
+    }
+
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* Patient Tile */
+    .patient-tile {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .patient-tile:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+
+    .patient-tile.high-risk {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .patient-tile.medium-risk {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .tile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .patient-id {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .risk-badge {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .risk-badge.low { background: #d1fae5; color: #065f46; }
+    .risk-badge.medium { background: #fef3c7; color: #92400e; }
+    .risk-badge.high { background: #fee2e2; color: #991b1b; }
+
+    .condition {
+      font-size: 14px;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .condition-code {
+      color: #667eea;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .agent-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #718096;
+    }
+
+    .agent-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #667eea;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .memory-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 7px;
+      background: #ede9fe;
+      border-radius: 10px;
+      font-size: 10px;
+      color: #6b21a8;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .memory-icon {
+      width: 10px;
+      height: 10px;
+      background: #9333ea;
+      border-radius: 50%;
+      animation: glow 2s ease infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 0px #9333ea; }
+      50% { box-shadow: 0 0 8px #9333ea; }
+    }
+
+    .sentiment-pulse {
+      width: 100%;
+      height: 32px;
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .pulse-line {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Escalation Sidebar */
+    .escalation-sidebar {
+      width: 360px;
+      background: white;
+      border-left: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 16px;
+    }
+
+    .sidebar-tab {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #718096;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .sidebar-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .escalation-item {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-left: 3px solid #dc2626;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .escalation-item.warning {
+      background: #fffbeb;
+      border-color: #fde68a;
+      border-left-color: #f59e0b;
+    }
+
+    .escalation-item.resolved {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      border-left-color: #16a34a;
+    }
+
+    .escalation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .escalation-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .escalation-time {
+      font-size: 11px;
+      color: #718096;
+    }
+
+    .escalation-desc {
+      font-size: 12px;
+      color: #4a5568;
+      line-height: 1.5;
+    }
+
+    /* System Ticker */
+    .system-ticker {
+      background: #eff6ff;
+      border-top: 1px solid #bfdbfe;
+      padding: 12px 24px;
+      overflow: hidden;
+      position: relative;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .ticker-content {
+      display: flex;
+      gap: 32px;
+      animation: scroll 40s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #1e40af;
+    }
+
+    .ticker-icon {
+      color: #16a34a;
+      font-weight: 700;
+    }
+
+    /* Hover Popover */
+    .thinking-popover {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 8px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      z-index: 100;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .patient-tile:hover .thinking-popover {
+      display: block;
+    }
+
+    .popover-title {
+      font-weight: 600;
+      color: #1a202c;
+      margin-bottom: 8px;
+    }
+
+    .reasoning-step {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: #4a5568;
+    }
+
+    .reasoning-step::before {
+      content: "→";
+      color: #667eea;
+      font-weight: 700;
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <div id="header">
-    <span class="brand">ADMIN.AI</span>
-    <span class="center">O P E R A T I O N S&nbsp;&nbsp;C E N T E R</span>
-    <span class="right">
-      <span id="clock">00:00:00.000</span>
-      <span class="status-dot"></span>
-      <span>ONLINE</span>
-    </span>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">ADMIN.AI</div>
+      <div class="login-subtitle">Operations Center</div>
+      <form id="login-form">
+        <input
+          type="password"
+          class="login-input"
+          placeholder="Enter password"
+          id="password-input"
+          autocomplete="off"
+        />
+        <button type="submit" class="login-btn">Access Dashboard</button>
+        <div class="login-error" id="login-error">Incorrect password</div>
+      </form>
+    </div>
   </div>
 
-  <!-- METRICS -->
-  <section id="metrics" class="panel">
-    <div class="panel-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="badge">/sys/metrics</span></div>
-    <div class="panel-body">
-      <div class="metric-card">
-        <div class="metric-label">Encounters / Hour</div>
-        <div class="metric-value" id="m-enc">0</div>
-        <div class="metric-sub" id="m-enc-sub">loading...</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Avg Time-to-Close</div>
-        <div class="metric-value" id="m-time">0m</div>
-        <div class="metric-sub" id="m-time-sub">target &lt; 4.0m</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">QA Pass Rate</div>
-        <div class="metric-value ok" id="m-qa">0%</div>
-        <div class="metric-sub" id="m-qa-sub">0 flagged today</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Revenue Captured</div>
-        <div class="metric-value" id="m-rev">$0</div>
-        <div class="metric-sub" id="m-rev-sub">$0 avg/claim</div>
+  <!-- MAIN DASHBOARD -->
+  <div id="dashboard">
+    <!-- Top Nav -->
+    <div class="top-nav">
+      <div class="nav-brand">ADMIN.AI</div>
+      <div class="nav-right">
+        <span id="live-clock">--:--:--</span>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          System Online
+        </div>
       </div>
     </div>
-  </section>
 
-  <!-- ENCOUNTER FEED -->
-  <section id="feed" class="panel">
-    <div class="panel-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="badge">/proc/encounters</span></div>
-    <div class="panel-body" id="feed-body"></div>
-  </section>
+    <!-- Main Layout -->
+    <div class="main-layout">
+      <!-- Patient Tiles -->
+      <div class="tiles-section">
+        <div class="tiles-header">
+          <h2>Live Patient Encounters</h2>
+          <p id="active-count">42 active sessions</p>
+        </div>
+        <div class="tiles-grid" id="tiles-grid"></div>
+      </div>
 
-  <!-- AGENT POOL -->
-  <section id="agents" class="panel">
-    <div class="panel-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="badge">/sys/agents</span></div>
-    <div class="panel-body" id="agents-body"></div>
-  </section>
-
-  <!-- PIPELINE -->
-  <section id="pipeline" class="panel">
-    <div class="panel-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="badge">/proc/pipeline</span></div>
-    <div class="panel-body" id="pipeline-body"></div>
-  </section>
-
-  <!-- BILLING -->
-  <section id="billing" class="panel">
-    <div class="panel-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="badge">/sys/rcm/claims</span></div>
-    <div class="panel-body" id="billing-body"></div>
-  </section>
-
-<script>
-// ─── UTILS ──────────────────────────────────────────────
-const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
-const pick=a=>a[rnd(0,a.length-1)];
-const hex=n=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,n);
-const pad=(n,w=2)=>String(n).padStart(w,'0');
-const ts=()=>{const d=new Date();return`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;};
-const fmt$=n=>n>=1e6?`$${(n/1e6).toFixed(2)}M`:n>=1e3?`$${(n/1e3).toFixed(1)}K`:`$${n}`;
-
-// ─── DATA POOLS ─────────────────────────────────────────
-const MODES=[
-  {k:'voice',open:s=>`channel/open voice SID:${s}`,ready:'v2t on • stream'},
-  {k:'video',open:s=>`channel/open video SID:${s}`,ready:'v2t+mm on • stream'},
-  {k:'chat', open:s=>`channel/open chat  SID:${s}`,ready:'nlp on • live'}
-];
-const ICD10=[
-  {code:'R07.9',name:'chest-pain'},
-  {code:'E11.9',name:'type2-diabetes'},
-  {code:'I10',  name:'hypertension'},
-  {code:'J45.909',name:'asthma'},
-  {code:'F32.9',name:'depression'},
-  {code:'N39.0',name:'uti'},
-  {code:'J18.9',name:'pneumonia'},
-  {code:'M54.5',name:'low-back-pain'},
-  {code:'K21.0',name:'gerd'}
-];
-const ICHI=['NA31.RX','PA45.LB','QA60.OB','RA05.EV','KB40.US','WA90.FU'];
-const PAYERS=['BCBS','AETNA','UNITED','CIGNA','HUMANA','MEDICARE','MEDICAID'];
-const PATIENTS=['SMITH,J','GARCIA,M','JOHNSON,R','WILLIAMS,A','CHEN,L','BROWN,K','DAVIS,P','MILLER,S','WILSON,T','MOORE,D','TAYLOR,N','ANDERSON,C','THOMAS,H','JACKSON,B','WHITE,E'];
-
-// ─── STATE ──────────────────────────────────────────────
-const S={
-  encTotal:rnd(380,520),
-  encHr:rnd(190,240),
-  avgClose:2.8+Math.random()*1.2,
-  qaRate:98.4+Math.random()*1.5,
-  qaFlags:rnd(1,4),
-  revenue:rnd(900000,1300000),
-  claimAvg:rnd(680,920),
-  agents:{
-    clinician:{total:40,active:rnd(8,14),current:'idle',avgTime:1.1+Math.random()*.6},
-    admin:{total:40,active:rnd(5,10),current:'idle',commitsHr:rnd(40,70)},
-    quality:{total:40,active:rnd(3,8),current:'idle',passRate:98.5+Math.random()*1.4},
-    rcm:{total:40,active:rnd(4,9),current:'idle',claimsHr:rnd(35,60),denialRate:.8+Math.random()*1.2}
-  },
-  pipeline:{intake:rnd(2,5),dx:rnd(1,4),qa:rnd(1,3),ehr:rnd(1,3),claims:rnd(2,6)},
-  pipeRates:{intake:rnd(42,52),dx:rnd(40,48),qa:rnd(39,47),ehr:rnd(38,46),claims:rnd(37,45)},
-  claims:{submitted:rnd(380,420),accepted:0,pending:rnd(6,14),denied:rnd(2,7),
-    amtSubmitted:0,amtAccepted:0,amtPending:0,amtDenied:0,recent:[]},
-  sidCounter:rnd(40,60)
-};
-S.claims.accepted=S.claims.submitted-S.claims.pending-S.claims.denied;
-S.claims.amtSubmitted=S.claims.submitted*S.claimAvg;
-S.claims.amtAccepted=S.claims.accepted*S.claimAvg;
-S.claims.amtPending=S.claims.pending*rnd(600,900);
-S.claims.amtDenied=S.claims.denied*rnd(400,800);
-for(let i=0;i<6;i++){
-  S.claims.recent.push({
-    id:`CLM-${hex(4)}`,code:pick(ICD10).code,amt:rnd(300,2800),
-    status:i<4?'ACCEPTED':i<5?'PENDING':'DENIED',time:ts()
-  });
-}
-
-// ─── CLOCK ──────────────────────────────────────────────
-const clockEl=document.getElementById('clock');
-setInterval(()=>{clockEl.textContent=ts();},50);
-
-// ─── METRICS PANEL ──────────────────────────────────────
-const mEnc=document.getElementById('m-enc');
-const mEncSub=document.getElementById('m-enc-sub');
-const mTime=document.getElementById('m-time');
-const mQa=document.getElementById('m-qa');
-const mQaSub=document.getElementById('m-qa-sub');
-const mRev=document.getElementById('m-rev');
-const mRevSub=document.getElementById('m-rev-sub');
-
-function updateMetrics(){
-  S.encHr=Math.max(140,Math.min(300,S.encHr+rnd(-8,10)));
-  S.avgClose=Math.max(1.8,Math.min(5.5,S.avgClose+(Math.random()-.52)*.3));
-  S.qaRate=Math.max(95,Math.min(100,S.qaRate+(Math.random()-.45)*.3));
-  S.revenue+=rnd(800,3200);
-
-  mEnc.textContent=S.encHr;
-  mEncSub.textContent=`${S.encTotal} total today`;
-  mTime.textContent=S.avgClose.toFixed(1)+'m';
-  mTime.className='metric-value'+(S.avgClose>4?' warn':'');
-
-  const qaEl=document.getElementById('m-qa');
-  qaEl.textContent=S.qaRate.toFixed(1)+'%';
-  qaEl.className='metric-value'+(S.qaRate>=98?' ok':S.qaRate>=95?' warn':' err');
-  mQaSub.textContent=S.qaFlags+' flagged today';
-
-  mRev.textContent=fmt$(S.revenue);
-  mRevSub.textContent=`${fmt$(S.claimAvg)} avg/claim`;
-}
-updateMetrics();
-setInterval(updateMetrics,3500+rnd(0,1500));
-
-// ─── FEED PANEL ─────────────────────────────────────────
-const feedBody=document.getElementById('feed-body');
-const MAX_FEED=22;
-const typeSpeed=rnd(6,10);
-
-function span(cls){const s=document.createElement('span');if(cls)s.className=cls;return s;}
-
-function feedLine(text,isPrompt,cls){
-  const row=document.createElement('div');row.className='row';
-  row.appendChild(span('ts')).textContent=ts();
-  if(isPrompt){row.appendChild(span('prompt')).textContent='$ ';}
-  const c=document.createElement('span');
-  if(cls)c.className=cls;
-  row.appendChild(c);
-  feedBody.appendChild(row);
-  while(feedBody.children.length>MAX_FEED)feedBody.removeChild(feedBody.firstChild);
-  feedBody.scrollTop=feedBody.scrollHeight;
-  return new Promise(res=>{
-    let i=0;
-    const tick=()=>{if(i<text.length){c.textContent+=text.charAt(i++);setTimeout(tick,typeSpeed);}else res();};
-    tick();
-  });
-}
-
-function delay(ms){return new Promise(r=>setTimeout(r,ms));}
-
-async function runEncounter(){
-  const sid=pad(S.sidCounter++,2);
-  const pid=rnd(70000,99999);
-  const mode=pick(MODES);
-  const dx=pick(ICD10);
-  const payer=pick(PAYERS);
-  const patient=pick(PATIENTS);
-  const cln=`clinician/${rnd(1,40)}`;
-  const adm=`admin/${rnd(1,40)}`;
-  const qa=`quality/${rnd(1,40)}`;
-  const rcm=`rcm/${rnd(1,40)}`;
-  const claimAmt=rnd(300,3500);
-
-  S.agents.clinician.active=Math.min(40,S.agents.clinician.active+1);
-  S.agents.admin.active=Math.min(40,S.agents.admin.active+1);
-  S.pipeline.intake++;
-
-  await feedLine(mode.open(sid),'prompt','agent-cln');
-  await delay(rnd(80,200));
-  await feedLine(mode.ready);
-  await delay(rnd(60,150));
-
-  await feedLine(`orchestrator spawn ${cln} ${adm} ${qa} ${rcm} PID:${pid}`,'prompt');
-  await delay(rnd(50,120));
-  await feedLine(`agents ready • patient:${patient}`);
-  await delay(rnd(200,500));
-
-  S.pipeline.intake--;S.pipeline.dx++;
-  S.agents.clinician.current=`dx ${dx.code}`;
-  await feedLine(`${cln} dx-eval ${dx.code} ${dx.name}`,'prompt','agent-cln');
-  await delay(rnd(300,700));
-
-  const confidence=(95+Math.random()*4.9).toFixed(1);
-  await feedLine(`${cln} finalize ${dx.code} • confidence ${confidence}%`,'prompt','agent-cln');
-  await delay(rnd(100,250));
-  await feedLine(`actions • ${pick(ICHI)} ${pick(ICHI)}`);
-  await delay(rnd(200,400));
-
-  S.pipeline.dx--;S.pipeline.qa++;
-  S.agents.quality.active=Math.min(40,S.agents.quality.active+1);
-  S.agents.quality.current=`QA ${dx.code}`;
-  await feedLine(`${qa} QA diag ${dx.code}`,'prompt','agent-qa');
-  await delay(rnd(300,600));
-
-  // Occasional QA flag
-  if(Math.random()<.08){
-    S.qaFlags++;
-    await feedLine(`${qa} FLAG: confidence below threshold • re-evaluating`,'','feed-warn');
-    await delay(rnd(400,800));
-    await feedLine(`${qa} re-eval passed • ${(96+Math.random()*3.9).toFixed(1)}%`,'','feed-ok');
-    await delay(rnd(100,200));
-  } else {
-    await feedLine(`${dx.code} • rationale ok • ${confidence}%`,'','feed-ok');
-  }
-  await delay(rnd(100,250));
-  S.agents.quality.active=Math.max(0,S.agents.quality.active-1);
-
-  S.pipeline.qa--;S.pipeline.ehr++;
-  // Rx check for some conditions
-  if(['J45.909','N39.0','J18.9','E11.9','I10'].includes(dx.code)){
-    await feedLine(`rx/${rnd(1,40)} e-script RX-${hex(4)} DOSE-${hex(3)}`,'prompt');
-    await delay(rnd(200,400));
-    await feedLine('checks pass','','feed-ok');
-    await delay(rnd(100,200));
-  }
-
-  S.agents.admin.current=`EHR commit`;
-  await feedLine(`${adm} commit EHR:ID${rnd(20,99)} • patient:${patient}`,'prompt','agent-adm');
-  await delay(rnd(300,600));
-  await feedLine(`note+orders saved • ${rnd(120,350)}ms`);
-  S.agents.admin.active=Math.max(0,S.agents.admin.active-1);
-  await delay(rnd(100,300));
-
-  S.pipeline.ehr--;S.pipeline.claims++;
-  S.agents.rcm.active=Math.min(40,S.agents.rcm.active+1);
-  S.agents.rcm.current=`claim ${dx.code}`;
-  await feedLine(`${rcm} claim ${dx.code} → ${payer}:${fmt$(claimAmt)}`,'prompt','agent-rcm');
-  await delay(rnd(200,500));
-
-  // Occasional upstream latency warning
-  if(Math.random()<.12){
-    await feedLine(`${payer} upstream latency ${rnd(900,2400)}ms`,'','feed-warn');
-    await delay(rnd(400,800));
-  }
-
-  await feedLine(`ack ${rnd(40,120)}ms • submitted`,'','feed-ok');
-  S.agents.rcm.active=Math.max(0,S.agents.rcm.active-1);
-  S.agents.clinician.active=Math.max(0,S.agents.clinician.active-1);
-  S.pipeline.claims--;
-
-  // Update billing
-  S.encTotal++;
-  S.claims.submitted++;
-  S.claims.amtSubmitted+=claimAmt;
-  const outcome=Math.random();
-  let status,statusCls;
-  if(outcome<.03){status='DENIED';statusCls='clm-err';S.claims.denied++;S.claims.amtDenied+=claimAmt;}
-  else if(outcome<.10){status='PENDING';statusCls='clm-warn';S.claims.pending++;S.claims.amtPending+=claimAmt;}
-  else{status='ACCEPTED';statusCls='clm-ok';S.claims.accepted++;S.claims.amtAccepted+=claimAmt;S.revenue+=claimAmt;}
-
-  S.claims.recent.unshift({id:`CLM-${hex(4)}`,code:dx.code,amt:claimAmt,status,time:ts()});
-  if(S.claims.recent.length>8)S.claims.recent.pop();
-}
-
-let feedRunning=false;
-async function feedLoop(){
-  if(feedRunning)return;
-  feedRunning=true;
-  while(true){
-    await runEncounter();
-    await delay(rnd(1500,4000));
-  }
-}
-feedLoop();
-
-// ─── AGENTS PANEL ───────────────────────────────────────
-const agentsBody=document.getElementById('agents-body');
-
-function loadBar(pct){
-  const filled=Math.round(pct/10);
-  const empty=10-filled;
-  return`<span class="load-fill">${'█'.repeat(filled)}</span><span class="load-empty">${'░'.repeat(empty)}</span>`;
-}
-
-function renderAgents(){
-  const a=S.agents;
-  agentsBody.innerHTML=`
-    <div class="agent-card">
-      <div class="agent-name cln">CLINICIAN</div>
-      <div class="agent-stat">Active: ${a.clinician.active}/${a.clinician.total}  <span class="load-bar">${loadBar(a.clinician.active/a.clinician.total*100)}</span></div>
-      <div class="agent-stat">Avg dx: ${a.clinician.avgTime.toFixed(1)}m</div>
-      <div class="agent-stat" style="color:var(--mono);opacity:.7">${a.clinician.current}</div>
+      <!-- Escalation Sidebar -->
+      <div class="escalation-sidebar">
+        <div class="sidebar-tabs">
+          <div class="sidebar-tab active" data-tab="urgent">Urgent</div>
+          <div class="sidebar-tab" data-tab="warnings">Warnings</div>
+          <div class="sidebar-tab" data-tab="resolved">Resolved</div>
+        </div>
+        <div class="sidebar-content" id="sidebar-content"></div>
+      </div>
     </div>
-    <div class="agent-card">
-      <div class="agent-name adm">ADMIN</div>
-      <div class="agent-stat">Active: ${a.admin.active}/${a.admin.total}  <span class="load-bar">${loadBar(a.admin.active/a.admin.total*100)}</span></div>
-      <div class="agent-stat">Commits/hr: ${a.admin.commitsHr}</div>
-      <div class="agent-stat" style="color:var(--mono);opacity:.7">${a.admin.current}</div>
+
+    <!-- System Ticker -->
+    <div class="system-ticker">
+      <div class="ticker-content" id="ticker"></div>
     </div>
-    <div class="agent-card">
-      <div class="agent-name qa">QUALITY</div>
-      <div class="agent-stat">Active: ${a.quality.active}/${a.quality.total}  <span class="load-bar">${loadBar(a.quality.active/a.quality.total*100)}</span></div>
-      <div class="agent-stat">Pass rate: ${a.quality.passRate.toFixed(1)}%</div>
-      <div class="agent-stat" style="color:var(--mono);opacity:.7">${a.quality.current}</div>
-    </div>
-    <div class="agent-card">
-      <div class="agent-name rcm">RCM</div>
-      <div class="agent-stat">Active: ${a.rcm.active}/${a.rcm.total}  <span class="load-bar">${loadBar(a.rcm.active/a.rcm.total*100)}</span></div>
-      <div class="agent-stat">Claims/hr: ${a.rcm.claimsHr} • Denial: ${a.rcm.denialRate.toFixed(1)}%</div>
-      <div class="agent-stat" style="color:var(--mono);opacity:.7">${a.rcm.current}</div>
-    </div>`;
-}
-renderAgents();
-setInterval(()=>{
-  const a=S.agents;
-  a.clinician.avgTime=Math.max(.8,Math.min(3,a.clinician.avgTime+(Math.random()-.5)*.1));
-  a.admin.commitsHr=Math.max(30,Math.min(80,a.admin.commitsHr+rnd(-2,3)));
-  a.quality.passRate=Math.max(95,Math.min(100,a.quality.passRate+(Math.random()-.45)*.2));
-  a.rcm.claimsHr=Math.max(25,Math.min(70,a.rcm.claimsHr+rnd(-2,3)));
-  a.rcm.denialRate=Math.max(.3,Math.min(3,a.rcm.denialRate+(Math.random()-.5)*.2));
-  renderAgents();
-},2200+rnd(0,800));
+  </div>
 
-// ─── PIPELINE PANEL ─────────────────────────────────────
-const pipeBody=document.getElementById('pipeline-body');
-const stages=['intake','dx','qa','ehr','claims'];
-const stageLabels=['INTAKE','DX/ICD-10','QA CHECK','EHR COMMIT','CLAIMS'];
+  <script>
+    // ─── LOGIN ──────────────────────────────────────────
+    const loginForm = document.getElementById('login-form');
+    const passwordInput = document.getElementById('password-input');
+    const loginError = document.getElementById('login-error');
+    const loginScreen = document.getElementById('login-screen');
+    const dashboard = document.getElementById('dashboard');
 
-function renderPipeline(){
-  const p=S.pipeline;
-  const r=S.pipeRates;
-  let html='';
-  stages.forEach((s,i)=>{
-    html+=`<div class="pipe-stage">
-      <div class="pipe-label">${stageLabels[i]}</div>
-      <div class="pipe-box"><div class="pipe-count">${p[s]}</div></div>
-      <div class="pipe-rate">${r[s]}/min</div>
-    </div>`;
-    if(i<stages.length-1) html+=`<div class="pipe-arrow">→</div>`;
-  });
-  pipeBody.innerHTML=html;
-}
-renderPipeline();
-setInterval(()=>{
-  stages.forEach(s=>{
-    S.pipeline[s]=Math.max(0,S.pipeline[s]+rnd(-1,1));
-    S.pipeRates[s]=Math.max(25,Math.min(60,S.pipeRates[s]+rnd(-2,2)));
-  });
-  renderPipeline();
-},1800+rnd(0,700));
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (passwordInput.value === 'admin') {
+        loginScreen.style.display = 'none';
+        dashboard.style.display = 'flex';
+        initDashboard();
+      } else {
+        loginError.style.display = 'block';
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
 
-// ─── BILLING PANEL ──────────────────────────────────────
-const billBody=document.getElementById('billing-body');
+    // ─── UTILS ──────────────────────────────────────────
+    const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+    const pick = a => a[rnd(0,a.length-1)];
+    const pad = (n,w=2) => String(n).padStart(w,'0');
 
-function renderBilling(){
-  const c=S.claims;
-  const denialRate=c.submitted>0?((c.denied/c.submitted)*100).toFixed(1):'0.0';
-  let recentHtml='';
-  c.recent.forEach(r=>{
-    const cls=r.status==='ACCEPTED'?'clm-ok':r.status==='PENDING'?'clm-warn':'clm-err';
-    recentHtml+=`<div><span class="ts">${r.time}</span> ${r.id} ${r.code} ${fmt$(r.amt)} <span class="${cls}">${r.status}</span></div>`;
-  });
+    // ─── DATA ───────────────────────────────────────────
+    const CONDITIONS = [
+      {code:'R07.9', name:'Chest Pain', severity:'high'},
+      {code:'E11.9', name:'Type 2 Diabetes', severity:'medium'},
+      {code:'I10', name:'Hypertension', severity:'low'},
+      {code:'J45.909', name:'Asthma', severity:'medium'},
+      {code:'F32.9', name:'Depression', severity:'low'},
+      {code:'N39.0', name:'UTI', severity:'low'},
+      {code:'J18.9', name:'Pneumonia', severity:'high'},
+      {code:'M54.5', name:'Low Back Pain', severity:'low'},
+      {code:'K21.0', name:'GERD', severity:'low'}
+    ];
 
-  billBody.innerHTML=`
-    <div class="billing-summary">
-      <div class="billing-row"><span class="label">submitted</span><span>${c.submitted}  ${fmt$(c.amtSubmitted)}</span></div>
-      <div class="billing-row"><span class="label">accepted</span><span class="clm-ok">${c.accepted}  ${fmt$(c.amtAccepted)}</span></div>
-      <div class="billing-row"><span class="label">pending</span><span class="clm-warn">${c.pending}  ${fmt$(c.amtPending)}</span></div>
-      <div class="billing-row"><span class="label">denied</span><span class="clm-err">${c.denied}  ${fmt$(c.amtDenied)}</span></div>
-      <div class="billing-row"><span class="label">denial rate</span><span>${denialRate}%</span></div>
-    </div>
-    <div class="billing-log">${recentHtml}</div>`;
-}
-renderBilling();
-setInterval(()=>{
-  // Resolve some pending claims
-  if(S.claims.pending>0&&Math.random()<.4){
-    S.claims.pending--;
-    const amt=rnd(400,1200);
-    S.claims.amtPending-=amt;
-    if(Math.random()<.15){S.claims.denied++;S.claims.amtDenied+=amt;}
-    else{S.claims.accepted++;S.claims.amtAccepted+=amt;}
-  }
-  renderBilling();
-},3500+rnd(0,2000));
-</script>
+    const AGENTS = ['Clinician', 'Admin', 'QA', 'RCM'];
+    const PATIENTS = ['PT-1847', 'PT-2394', 'PT-8832', 'PT-4721', 'PT-9234', 'PT-3821', 'PT-7612', 'PT-5493'];
+
+    // ─── CLOCK ──────────────────────────────────────────
+    const clockEl = document.getElementById('live-clock');
+    setInterval(() => {
+      const d = new Date();
+      clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }, 1000);
+
+    // ─── DASHBOARD INIT ─────────────────────────────────
+    function initDashboard() {
+      generateTiles();
+      updateEscalations();
+      startTicker();
+
+      setInterval(updateTileStatuses, 3000);
+      setInterval(updateEscalations, 5000);
+    }
+
+    // ─── PATIENT TILES ──────────────────────────────────
+    const tilesGrid = document.getElementById('tiles-grid');
+    let tiles = [];
+
+    function generateTiles() {
+      tiles = [];
+      for (let i = 0; i < 36; i++) {
+        const cond = pick(CONDITIONS);
+        const hasMemory = Math.random() > 0.6;
+        const risk = cond.severity;
+
+        tiles.push({
+          id: pick(PATIENTS) + '-' + rnd(100,999),
+          condition: cond,
+          agent: pick(AGENTS),
+          risk,
+          hasMemory,
+          sentiment: generateSentiment(),
+          reasoning: generateReasoning(cond)
+        });
+      }
+      renderTiles();
+    }
+
+    function generateSentiment() {
+      return Array.from({length: 20}, () => rnd(20, 80));
+    }
+
+    function generateReasoning(cond) {
+      const steps = [
+        'Patient reports ' + cond.name.toLowerCase(),
+        'Reviewed patient history and current medications',
+        'Assessed symptom severity: ' + cond.severity,
+        'Determined ICD-10 code: ' + cond.code,
+        'Recommended treatment protocol approved'
+      ];
+      return steps;
+    }
+
+    function renderTiles() {
+      tilesGrid.innerHTML = tiles.map(tile => `
+        <div class="patient-tile ${tile.risk}-risk">
+          <div class="tile-header">
+            <span class="patient-id">${tile.id}</span>
+            <span class="risk-badge ${tile.risk}">${tile.risk}</span>
+          </div>
+          <div class="condition">
+            <span class="condition-code">${tile.condition.code}</span> ${tile.condition.name}
+          </div>
+          <div class="agent-status">
+            <div class="agent-icon">AI</div>
+            ${tile.agent} Agent
+            ${tile.hasMemory ? '<span class="memory-indicator"><span class="memory-icon"></span>Context Retrieved</span>' : ''}
+          </div>
+          <div class="sentiment-pulse">
+            <svg class="pulse-line" viewBox="0 0 100 32">
+              <polyline
+                points="${tile.sentiment.map((v,i) => `${i*5},${32-v/3}`).join(' ')}"
+                fill="none"
+                stroke="${tile.risk === 'high' ? '#dc2626' : tile.risk === 'medium' ? '#f59e0b' : '#16a34a'}"
+                stroke-width="2"
+              />
+            </svg>
+          </div>
+          <div class="thinking-popover">
+            <div class="popover-title">AI Clinical Reasoning</div>
+            ${tile.reasoning.map(step => `<div class="reasoning-step">${step}</div>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateTileStatuses() {
+      tiles.forEach(tile => {
+        tile.sentiment.shift();
+        tile.sentiment.push(rnd(20, 80));
+        if (Math.random() > 0.9) {
+          tile.agent = pick(AGENTS);
+        }
+      });
+      renderTiles();
+    }
+
+    // ─── ESCALATIONS ────────────────────────────────────
+    const sidebarContent = document.getElementById('sidebar-content');
+    let escalations = {
+      urgent: [],
+      warnings: [],
+      resolved: []
+    };
+
+    function updateEscalations() {
+      // Add new urgent if needed
+      if (Math.random() > 0.7 && escalations.urgent.length < 3) {
+        escalations.urgent.push({
+          title: 'High-Risk Patient Flagged',
+          desc: 'PT-' + rnd(1000,9999) + ' requires immediate clinician review',
+          time: 'Just now'
+        });
+      }
+
+      // Add warnings
+      if (Math.random() > 0.6 && escalations.warnings.length < 5) {
+        escalations.warnings.push({
+          title: 'QA Confidence Below Threshold',
+          desc: 'Diagnosis confidence 87% for ' + pick(CONDITIONS).code,
+          time: rnd(1,5) + 'm ago'
+        });
+      }
+
+      // Move urgent to resolved occasionally
+      if (escalations.urgent.length > 0 && Math.random() > 0.8) {
+        const resolved = escalations.urgent.shift();
+        resolved.time = 'Just now';
+        escalations.resolved.unshift(resolved);
+        escalations.resolved = escalations.resolved.slice(0, 8);
+      }
+
+      renderEscalations();
+    }
+
+    function renderEscalations() {
+      const activeTab = document.querySelector('.sidebar-tab.active').dataset.tab;
+      const items = escalations[activeTab] || [];
+
+      sidebarContent.innerHTML = items.length === 0
+        ? '<p style="text-align:center;color:#718096;padding:20px;font-size:13px;">No items</p>'
+        : items.map(item => `
+          <div class="escalation-item ${activeTab}">
+            <div class="escalation-header">
+              <span class="escalation-title">${item.title}</span>
+              <span class="escalation-time">${item.time}</span>
+            </div>
+            <div class="escalation-desc">${item.desc}</div>
+          </div>
+        `).join('');
+    }
+
+    document.querySelectorAll('.sidebar-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderEscalations();
+      });
+    });
+
+    // ─── SYSTEM TICKER ──────────────────────────────────
+    const ticker = document.getElementById('ticker');
+    const tickerEvents = [
+      '✓ EMR Synced',
+      '✓ Script Faxed',
+      '✓ Lab Order Sent',
+      '✓ Claim Submitted',
+      '✓ QA Passed',
+      '✓ Patient Notified',
+      '✓ Follow-up Scheduled',
+      '✓ Prior Auth Approved',
+      '✓ Referral Sent'
+    ];
+
+    function startTicker() {
+      const content = [...tickerEvents, ...tickerEvents].map(e =>
+        `<div class="ticker-item"><span class="ticker-icon">✓</span>${e}</div>`
+      ).join('');
+      ticker.innerHTML = content;
+    }
+  </script>
 </body>
 </html>
