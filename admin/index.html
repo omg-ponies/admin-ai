@@ -4,436 +4,413 @@
   <link rel="icon" href="/favicon.ico" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin.ai — Operations</title>
+  <title>Admin.ai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #f8f9fb;
-      color: #1a202c;
-      overflow: hidden;
-      height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #B8E8E3 0%, #E8F5F3 50%, #F5F5F5 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
     }
 
-    /* ─── LOGIN SCREEN ─── */
+    /* Background shapes */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 60%;
+      height: 80%;
+      background: rgba(184, 232, 227, 0.3);
+      border-radius: 40% 60% 70% 30%;
+      filter: blur(80px);
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      right: -10%;
+      width: 50%;
+      height: 70%;
+      background: rgba(232, 245, 243, 0.4);
+      border-radius: 60% 40% 30% 70%;
+      filter: blur(100px);
+      z-index: 0;
+    }
+
+    /* Login Screen */
     #login-screen {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     .login-card {
       background: white;
-      padding: 48px 40px;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      padding: 60px 50px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
       width: 100%;
-      max-width: 400px;
+      max-width: 440px;
       text-align: center;
     }
 
-    .login-logo {
-      font-size: 32px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
+    .logo {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 30px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
     }
 
-    .login-subtitle {
-      font-size: 14px;
-      color: #718096;
-      margin-bottom: 32px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+    .logo span {
+      width: 16px;
+      height: 16px;
+      background: #1a1a1a;
+      border-radius: 50%;
     }
 
-    .login-input {
+    .login-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 400;
+      color: #1a1a1a;
+      margin-bottom: 40px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-field {
       width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #e2e8f0;
+      padding: 16px 20px;
+      border: 1px solid #e5e5e5;
       border-radius: 8px;
       font-size: 15px;
-      transition: all 0.2s;
-      margin-bottom: 16px;
+      transition: border-color 0.2s;
+      background: #fafafa;
     }
 
-    .login-input:focus {
+    .input-field:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #1a1a1a;
+      background: white;
     }
 
     .login-btn {
       width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      background: #1a1a1a;
       color: white;
       border: none;
       border-radius: 8px;
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 10px;
+      transition: background 0.2s;
     }
 
     .login-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+      background: #000;
     }
 
-    .login-btn:active {
-      transform: translateY(0);
+    .login-footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .login-footer a {
+      color: #1a1a1a;
+      text-decoration: none;
+      font-weight: 500;
     }
 
     .login-error {
-      color: #e53e3e;
+      color: #dc2626;
       font-size: 13px;
       margin-top: 12px;
       display: none;
     }
 
-    /* ─── MAIN DASHBOARD ─── */
+    /* Main Dashboard */
     #dashboard {
       display: none;
-      height: 100vh;
-      flex-direction: column;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
     }
 
     /* Top Nav */
     .top-nav {
       background: white;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 0 24px;
-      height: 64px;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 20px 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-shrink: 0;
     }
 
-    .nav-brand {
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-logo {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px;
+    }
+
+    .nav-logo span {
+      width: 12px;
+      height: 12px;
+      background: #1a1a1a;
+      border-radius: 50%;
+    }
+
+    .company-dropdown {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 40px;
+    }
+
+    .nav-link {
+      font-size: 15px;
+      color: #666;
+      text-decoration: none;
+      padding: 8px 0;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: #1a1a1a;
+    }
+
+    .nav-link.active {
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -21px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #1a1a1a;
     }
 
     .nav-right {
       display: flex;
+      gap: 32px;
       align-items: center;
-      gap: 24px;
+    }
+
+    .nav-right a {
       font-size: 14px;
-      color: #718096;
+      color: #666;
+      text-decoration: none;
     }
 
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #16a34a;
+    .nav-right a:hover {
+      color: #1a1a1a;
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #16a34a;
-      border-radius: 50%;
-      animation: pulse 2s ease infinite;
+    /* Main Content */
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 60px 40px;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* Main Layout */
-    .main-layout {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* Tile Grid */
-    .tiles-section {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-    }
-
-    .tiles-header {
-      margin-bottom: 20px;
-    }
-
-    .tiles-header h2 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #1a202c;
-      margin-bottom: 4px;
-    }
-
-    .tiles-header p {
-      font-size: 13px;
-      color: #718096;
-    }
-
-    .tiles-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
-    /* Patient Tile */
-    .patient-tile {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.2s;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .patient-tile:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      transform: translateY(-2px);
-    }
-
-    .patient-tile.high-risk {
-      background: #fef2f2;
-      border-color: #fecaca;
-    }
-
-    .patient-tile.medium-risk {
-      background: #fffbeb;
-      border-color: #fde68a;
-    }
-
-    .tile-header {
+    .page-header {
+      margin-bottom: 40px;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 12px;
     }
 
-    .patient-id {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1a202c;
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      font-weight: 400;
+      color: #1a1a1a;
+      line-height: 1.2;
     }
 
-    .risk-badge {
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+    .page-subtitle {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 400;
+      color: #666;
     }
 
-    .risk-badge.low { background: #d1fae5; color: #065f46; }
-    .risk-badge.medium { background: #fef3c7; color: #92400e; }
-    .risk-badge.high { background: #fee2e2; color: #991b1b; }
-
-    .condition {
+    .add-btn {
+      padding: 12px 24px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 8px;
       font-size: 14px;
-      color: #4a5568;
-      margin-bottom: 8px;
-    }
-
-    .condition-code {
-      color: #667eea;
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    .agent-status {
+      font-weight: 500;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #718096;
+      gap: 8px;
+      transition: background 0.2s;
     }
 
-    .agent-icon {
+    .add-btn:hover {
+      background: #000;
+    }
+
+    /* Patient Table */
+    .patient-table {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #fafafa;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    th {
+      text-align: left;
+      padding: 16px 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f5f5f5;
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background: #fafafa;
+      cursor: pointer;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    td {
+      padding: 20px 24px;
+      font-size: 15px;
+      color: #1a1a1a;
+    }
+
+    .patient-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .patient-avatar {
       width: 16px;
       height: 16px;
-      border-radius: 50%;
-      background: #667eea;
+      color: #999;
+    }
+
+    .patient-status {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #f0fdf4;
+      color: #16a34a;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .patient-status.high-risk {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .patient-status.medium-risk {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #e5e5e5;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-size: 8px;
-      font-weight: 700;
-    }
-
-    .memory-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 7px;
-      background: #ede9fe;
-      border-radius: 10px;
-      font-size: 10px;
-      color: #6b21a8;
-      font-weight: 600;
-      margin-left: 6px;
-    }
-
-    .memory-icon {
-      width: 10px;
-      height: 10px;
-      background: #9333ea;
-      border-radius: 50%;
-      animation: glow 2s ease infinite;
-    }
-
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 0px #9333ea; }
-      50% { box-shadow: 0 0 8px #9333ea; }
-    }
-
-    /* Escalation Sidebar */
-    .escalation-sidebar {
-      width: 360px;
-      background: white;
-      border-left: 1px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .sidebar-tabs {
-      display: flex;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 0 16px;
-    }
-
-    .sidebar-tab {
-      padding: 14px 20px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #718096;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
       transition: all 0.2s;
     }
 
-    .sidebar-tab.active {
-      color: #667eea;
-      border-bottom-color: #667eea;
+    .action-btn:hover {
+      border-color: #1a1a1a;
+      background: #fafafa;
     }
 
-    .sidebar-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-    }
-
-    .escalation-item {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-left: 3px solid #dc2626;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .escalation-item.warning {
-      background: #fffbeb;
-      border-color: #fde68a;
-      border-left-color: #f59e0b;
-    }
-
-    .escalation-item.resolved {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-      border-left-color: #16a34a;
-    }
-
-    .escalation-header {
+    .add-patient-row {
+      padding: 20px 24px;
+      color: #999;
+      font-size: 14px;
+      cursor: pointer;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      gap: 12px;
     }
 
-    .escalation-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1a202c;
+    .add-patient-row:hover {
+      background: #fafafa;
+      color: #1a1a1a;
     }
 
-    .escalation-time {
-      font-size: 11px;
-      color: #718096;
-    }
-
-    .escalation-desc {
-      font-size: 12px;
-      color: #4a5568;
-      line-height: 1.5;
-    }
-
-    /* Terminal Log Ticker */
-    .terminal-log {
-      background: #0a0d10;
-      border-top: 1px solid #1b2025;
-      padding: 8px 16px;
-      height: 120px;
-      flex-shrink: 0;
-      overflow-y: auto;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 11px;
-      color: #00ffff;
-      line-height: 1.4;
-    }
-
-    .log-line {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 2px;
-      animation: logFadeIn 0.3s ease;
-    }
-
-    @keyframes logFadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .log-time {
-      color: #7d8a96;
-      font-size: 10px;
-    }
-
-    .log-type {
-      font-weight: 600;
-      min-width: 50px;
-    }
-
-    .log-type.ok { color: #36d399; }
-    .log-type.info { color: #00c6c7; }
-    .log-type.warn { color: #ffd166; }
-
-    .log-msg {
-      color: #cfe7e7;
-    }
-
-    /* Patient Detail Modal */
+    /* Modal */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -441,7 +418,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.4);
       z-index: 1000;
       align-items: center;
       justify-content: center;
@@ -454,78 +431,93 @@
 
     .modal-container {
       background: white;
-      border-radius: 16px;
+      border-radius: 20px;
       width: 100%;
-      max-width: 1400px;
-      height: 90vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      max-width: 1200px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+      padding: 40px;
     }
 
     .modal-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 32px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .modal-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #1a202c;
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 400;
+      color: #1a1a1a;
     }
 
     .modal-close {
       background: none;
       border: none;
-      font-size: 24px;
-      color: #718096;
+      font-size: 28px;
+      color: #999;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      line-height: 1;
     }
 
     .modal-close:hover {
-      color: #1a202c;
+      color: #1a1a1a;
     }
 
-    .modal-body {
-      flex: 1;
+    .patient-details {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1px;
-      background: #e2e8f0;
-      overflow: hidden;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
     }
 
-    .modal-panel {
-      background: white;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+    .detail-group {
+      margin-bottom: 24px;
     }
 
-    .panel-header {
-      padding: 16px;
-      border-bottom: 1px solid #e2e8f0;
+    .detail-label {
       font-size: 13px;
-      font-weight: 600;
-      color: #4a5568;
-      letter-spacing: 0.5px;
+      color: #666;
       text-transform: uppercase;
-      flex-shrink: 0;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
     }
 
-    .panel-content {
-      flex: 1;
-      padding: 16px;
+    .detail-value {
+      font-size: 16px;
+      color: #1a1a1a;
+    }
+
+    .conversation-section {
+      margin-top: 40px;
+      padding-top: 40px;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 400;
+      margin-bottom: 24px;
+      color: #1a1a1a;
+    }
+
+    .chat-messages {
+      max-height: 400px;
       overflow-y: auto;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 12px;
     }
 
-    /* Conversation Panel */
     .chat-message {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       display: flex;
       flex-direction: column;
     }
@@ -539,227 +531,38 @@
     }
 
     .message-bubble {
-      max-width: 75%;
-      padding: 10px 14px;
+      max-width: 70%;
+      padding: 12px 16px;
       border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .chat-message.patient .message-bubble {
-      background: #f3f4f6;
-      color: #1a202c;
-      border-bottom-left-radius: 4px;
-    }
-
-    .chat-message.ai .message-bubble {
-      background: #667eea;
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-
-    .message-time {
-      font-size: 10px;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
-
-    .typing-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 10px 14px;
-      background: #f3f4f6;
-      border-radius: 12px;
-      width: fit-content;
-    }
-
-    .typing-dot {
-      width: 6px;
-      height: 6px;
-      background: #9ca3af;
-      border-radius: 50%;
-      animation: typingBounce 1.4s infinite;
-    }
-
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes typingBounce {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-8px); }
-    }
-
-    /* Reasoning Panel */
-    .reasoning-item {
-      margin-bottom: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #f3f4f6;
-    }
-
-    .reasoning-item:last-child {
-      border-bottom: none;
-    }
-
-    .reasoning-agent {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .reasoning-agent-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #667eea;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-    }
-
-    .reasoning-agent-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: #667eea;
-    }
-
-    .reasoning-step {
-      font-size: 12px;
-      color: #4a5568;
-      margin: 4px 0 4px 28px;
+      font-size: 14px;
       line-height: 1.6;
     }
 
-    .reasoning-step::before {
-      content: "→";
-      color: #667eea;
-      margin-right: 8px;
-      font-weight: 700;
-    }
-
-    .confidence-bar {
-      margin: 8px 0 0 28px;
-      height: 6px;
-      background: #e5e7eb;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .confidence-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #667eea, #764ba2);
-      transition: width 0.5s ease;
-    }
-
-    .confidence-label {
-      font-size: 10px;
-      color: #9ca3af;
-      margin: 4px 0 0 28px;
-    }
-
-    /* EMR Panel */
-    .vm-container {
-      background: #1a1a1a;
-      border-radius: 8px;
-      padding: 8px;
-      margin-bottom: 16px;
-    }
-
-    .vm-header {
-      background: #2d2d2d;
-      padding: 8px 12px;
-      border-radius: 4px 4px 0 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .vm-title {
-      font-size: 11px;
-      color: #9ca3af;
-      font-family: monospace;
-    }
-
-    .vm-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: #10b981;
-    }
-
-    .vm-status-dot {
-      width: 6px;
-      height: 6px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: pulse 2s ease infinite;
-    }
-
-    .vm-screen {
+    .chat-message.patient .message-bubble {
       background: white;
-      aspect-ratio: 16/10;
-      border-radius: 0 0 4px 4px;
-      position: relative;
-      overflow: hidden;
+      border: 1px solid #e5e5e5;
+      color: #1a1a1a;
     }
 
-    .vm-screen-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-      color: #9ca3af;
+    .chat-message.ai .message-bubble {
+      background: #1a1a1a;
+      color: white;
+    }
+
+    .message-time {
       font-size: 12px;
+      color: #999;
+      margin-top: 6px;
     }
 
-    .vm-cursor {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      pointer-events: none;
-      animation: moveCursor 8s ease-in-out infinite;
-    }
+    @media (max-width: 768px) {
+      .nav-center {
+        display: none;
+      }
 
-    @keyframes moveCursor {
-      0%, 100% { top: 20%; left: 30%; }
-      25% { top: 40%; left: 60%; }
-      50% { top: 60%; left: 40%; }
-      75% { top: 30%; left: 70%; }
-    }
-
-    .emr-activity {
-      margin-top: 16px;
-    }
-
-    .activity-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      font-size: 12px;
-      color: #4a5568;
-      border-bottom: 1px solid #f3f4f6;
-    }
-
-    .activity-icon {
-      color: #10b981;
-      font-weight: 700;
-    }
-
-    .activity-text {
-      flex: 1;
-    }
-
-    .activity-time {
-      font-size: 10px;
-      color: #9ca3af;
+      .patient-details {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -768,110 +571,132 @@
   <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <div class="login-card">
-      <div class="login-logo">ADMIN.AI</div>
-      <div class="login-subtitle">Operations Center</div>
+      <div class="logo">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <h1 class="login-title">Login</h1>
       <form id="login-form">
-        <input
-          type="password"
-          class="login-input"
-          placeholder="Enter password"
-          id="password-input"
-          autocomplete="off"
-        />
-        <button type="submit" class="login-btn">Access Dashboard</button>
+        <div class="input-group">
+          <input type="email" class="input-field" placeholder="Email" />
+        </div>
+        <div class="input-group">
+          <input type="password" class="input-field" placeholder="Password" id="password-input" autocomplete="off" />
+        </div>
+        <button type="submit" class="login-btn">Login</button>
         <div class="login-error" id="login-error">Incorrect password</div>
       </form>
+      <div class="login-footer">
+        New user? <a href="#">Sign up here</a>
+      </div>
     </div>
   </div>
 
   <!-- MAIN DASHBOARD -->
   <div id="dashboard">
-    <!-- Top Nav -->
     <div class="top-nav">
-      <div class="nav-brand">ADMIN.AI</div>
+      <div class="nav-left">
+        <div class="nav-logo">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <select class="company-dropdown">
+          <option>Company A</option>
+        </select>
+      </div>
+
+      <div class="nav-center">
+        <a href="#" class="nav-link active">Consultation</a>
+        <a href="#" class="nav-link">Three Party</a>
+        <a href="#" class="nav-link">Patients</a>
+      </div>
+
       <div class="nav-right">
-        <span id="live-clock">--:--:--</span>
-        <div class="status-badge">
-          <span class="status-dot"></span>
-          System Online
-        </div>
+        <a href="#">API Keys</a>
+        <a href="#">Users</a>
+        <a href="#" onclick="logout()">Logout</a>
       </div>
     </div>
 
-    <!-- Main Layout -->
-    <div class="main-layout">
-      <!-- Patient Tiles -->
-      <div class="tiles-section">
-        <div class="tiles-header">
-          <h2>Live Patient Encounters</h2>
-          <p id="active-count">36 active sessions</p>
+    <div class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Consulation</div>
+          <div class="page-subtitle">Choose a patient</div>
         </div>
-        <div class="tiles-grid" id="tiles-grid"></div>
+        <button class="add-btn" onclick="alert('Add patient')">
+          <span>+</span> Add new patient
+        </button>
       </div>
 
-      <!-- Escalation Sidebar -->
-      <div class="escalation-sidebar">
-        <div class="sidebar-tabs">
-          <div class="sidebar-tab active" data-tab="urgent">Urgent</div>
-          <div class="sidebar-tab" data-tab="warnings">Warnings</div>
-          <div class="sidebar-tab" data-tab="resolved">Resolved</div>
+      <div class="patient-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Date of Birth</th>
+              <th>Condition</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="patient-tbody"></tbody>
+        </table>
+        <div class="add-patient-row" onclick="alert('Add patient')">
+          <div class="nav-logo" style="width: 20px; height: 20px;">
+            <span style="width: 8px; height: 8px;"></span>
+            <span style="width: 8px; height: 8px;"></span>
+            <span style="width: 8px; height: 8px;"></span>
+            <span style="width: 8px; height: 8px;"></span>
+          </div>
+          Add new patient
         </div>
-        <div class="sidebar-content" id="sidebar-content"></div>
       </div>
     </div>
-
-    <!-- Terminal Log -->
-    <div class="terminal-log" id="terminal-log"></div>
   </div>
 
-  <!-- Patient Detail Modal -->
+  <!-- PATIENT MODAL -->
   <div class="modal-overlay" id="patient-modal">
     <div class="modal-container">
       <div class="modal-header">
-        <div class="modal-title" id="modal-title">Patient Details</div>
+        <h2 class="modal-title" id="modal-title">Patient Details</h2>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
-      <div class="modal-body">
-        <!-- Conversation Panel -->
-        <div class="modal-panel">
-          <div class="panel-header">Conversation</div>
-          <div class="panel-content" id="conversation-panel"></div>
-        </div>
 
-        <!-- AI Reasoning Panel -->
-        <div class="modal-panel">
-          <div class="panel-header">AI Reasoning</div>
-          <div class="panel-content" id="reasoning-panel"></div>
-        </div>
-
-        <!-- EMR Computer Use Panel -->
-        <div class="modal-panel">
-          <div class="panel-header">Computer Use • EMR</div>
-          <div class="panel-content" id="emr-panel">
-            <div class="vm-container">
-              <div class="vm-header">
-                <span class="vm-title">VM-1847 • Epic MyChart</span>
-                <div class="vm-status">
-                  <span class="vm-status-dot"></span>
-                  ACTIVE
-                </div>
-              </div>
-              <div class="vm-screen">
-                <div class="vm-screen-placeholder">EMR Interface</div>
-                <svg class="vm-cursor" viewBox="0 0 16 16">
-                  <path d="M0 0 L0 14 L4 10 L7 16 L9 15 L6 9 L11 9 Z" fill="#1a202c" />
-                </svg>
-              </div>
-            </div>
-            <div class="emr-activity" id="emr-activity"></div>
+      <div class="patient-details">
+        <div>
+          <div class="detail-group">
+            <div class="detail-label">Patient ID</div>
+            <div class="detail-value" id="detail-id">—</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-label">Condition</div>
+            <div class="detail-value" id="detail-condition">—</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-label">Date of Birth</div>
+            <div class="detail-value" id="detail-dob">—</div>
           </div>
         </div>
+        <div>
+          <div class="detail-group">
+            <div class="detail-label">Status</div>
+            <div class="detail-value" id="detail-status">—</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-label">Agent</div>
+            <div class="detail-value" id="detail-agent">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conversation-section">
+        <h3 class="section-title">Conversation</h3>
+        <div class="chat-messages" id="chat-messages"></div>
       </div>
     </div>
   </div>
 
   <script>
-    // ─── LOGIN ──────────────────────────────────────────
+    // Login
     const loginForm = document.getElementById('login-form');
     const passwordInput = document.getElementById('password-input');
     const loginError = document.getElementById('login-error');
@@ -882,21 +707,25 @@
       e.preventDefault();
       if (passwordInput.value === 'admin') {
         loginScreen.style.display = 'none';
-        dashboard.style.display = 'flex';
+        dashboard.style.display = 'block';
         initDashboard();
       } else {
         loginError.style.display = 'block';
         passwordInput.value = '';
-        passwordInput.focus();
       }
     });
 
-    // ─── UTILS ──────────────────────────────────────────
+    function logout() {
+      dashboard.style.display = 'none';
+      loginScreen.style.display = 'flex';
+      passwordInput.value = '';
+    }
+
+    // Utils
     const rnd = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
     const pick = a => a[rnd(0,a.length-1)];
-    const pad = (n,w=2) => String(n).padStart(w,'0');
 
-    // ─── DATA ───────────────────────────────────────────
+    // Data
     const CONDITIONS = [
       {code:'R07.9', name:'Chest Pain', severity:'high'},
       {code:'J18.9', name:'Pneumonia', severity:'high'},
@@ -905,356 +734,104 @@
       {code:'J45.909', name:'Asthma', severity:'medium'},
       {code:'F32.9', name:'Depression', severity:'low'},
       {code:'N39.0', name:'UTI', severity:'low'},
-      {code:'M54.5', name:'Low Back Pain', severity:'low'},
-      {code:'K21.0', name:'GERD', severity:'low'}
+      {code:'M54.5', name:'Low Back Pain', severity:'low'}
     ];
 
-    const AGENTS = ['Clinician', 'Admin', 'QA', 'RCM'];
-    const PATIENTS = ['PT-1847', 'PT-2394', 'PT-8832', 'PT-4721', 'PT-9234', 'PT-3821', 'PT-7612', 'PT-5493'];
+    const PATIENTS = ['PT-1847', 'PT-2394', 'PT-8832', 'PT-4721', 'PT-9234'];
+    let patients = [];
 
-    // ─── CLOCK ──────────────────────────────────────────
-    const clockEl = document.getElementById('live-clock');
-    setInterval(() => {
-      const d = new Date();
-      clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }, 1000);
-
-    // ─── DASHBOARD INIT ─────────────────────────────────
     function initDashboard() {
-      generateTiles();
-      updateEscalations();
-      startTerminalLog();
-
-      setInterval(updateTileStatuses, 3000);
-      setInterval(updateEscalations, 5000);
+      generatePatients();
+      renderPatients();
     }
 
-    // ─── PATIENT TILES ──────────────────────────────────
-    const tilesGrid = document.getElementById('tiles-grid');
-    let tiles = [];
+    function generatePatients() {
+      patients = [];
+      const highCount = rnd(2,3);
+      const mediumCount = rnd(5,8);
+      const lowCount = 15 - highCount - mediumCount;
 
-    function generateTiles() {
-      tiles = [];
-
-      // Generate 36 tiles with controlled risk distribution
-      // 5-10% high risk = 2-4 tiles
-      const highRiskCount = rnd(2, 3);
-      const mediumRiskCount = rnd(10, 14);
-      const lowRiskCount = 36 - highRiskCount - mediumRiskCount;
-
-      // Add high risk tiles
-      for (let i = 0; i < highRiskCount; i++) {
+      for (let i = 0; i < highCount; i++) {
         const cond = pick(CONDITIONS.filter(c => c.severity === 'high'));
-        tiles.push(createTile(cond, 'high'));
+        patients.push(createPatient(cond, 'high'));
       }
-
-      // Add medium risk tiles
-      for (let i = 0; i < mediumRiskCount; i++) {
+      for (let i = 0; i < mediumCount; i++) {
         const cond = pick(CONDITIONS.filter(c => c.severity === 'medium'));
-        tiles.push(createTile(cond, 'medium'));
+        patients.push(createPatient(cond, 'medium'));
       }
-
-      // Add low risk tiles
-      for (let i = 0; i < lowRiskCount; i++) {
+      for (let i = 0; i < lowCount; i++) {
         const cond = pick(CONDITIONS.filter(c => c.severity === 'low'));
-        tiles.push(createTile(cond, 'low'));
+        patients.push(createPatient(cond, 'low'));
       }
-
-      renderTiles();
     }
 
-    function createTile(cond, risk) {
+    function createPatient(cond, risk) {
       return {
         id: pick(PATIENTS) + '-' + rnd(100,999),
+        name: 'Patient ' + rnd(1000,9999),
+        dob: '1985-08-16',
         condition: cond,
-        agent: pick(AGENTS),
         risk,
-        hasMemory: Math.random() > 0.6,
-        reasoning: generateReasoning(cond)
+        agent: pick(['Clinician', 'Admin', 'QA'])
       };
     }
 
-    function generateReasoning(cond) {
-      return [
-        'Patient reports ' + cond.name.toLowerCase(),
-        'Reviewed patient history and current medications',
-        'Assessed symptom severity: ' + cond.severity,
-        'Determined ICD-10 code: ' + cond.code,
-        'Recommended treatment protocol approved'
-      ];
-    }
-
-    function renderTiles() {
-      tilesGrid.innerHTML = tiles.map(tile => `
-        <div class="patient-tile ${tile.risk}-risk" onclick='openPatientModal(${JSON.stringify(tile).replace(/'/g, "&apos;")})'>
-          <div class="tile-header">
-            <span class="patient-id">${tile.id}</span>
-            <span class="risk-badge ${tile.risk}">${tile.risk}</span>
-          </div>
-          <div class="condition">
-            <span class="condition-code">${tile.condition.code}</span> ${tile.condition.name}
-          </div>
-          <div class="agent-status">
-            <div class="agent-icon">AI</div>
-            ${tile.agent} Agent
-            ${tile.hasMemory ? '<span class="memory-indicator"><span class="memory-icon"></span>Context Retrieved</span>' : ''}
-          </div>
-        </div>
+    function renderPatients() {
+      const tbody = document.getElementById('patient-tbody');
+      tbody.innerHTML = patients.map(p => `
+        <tr onclick='openPatient(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+          <td>
+            <div class="patient-name">
+              <svg class="patient-avatar" viewBox="0 0 16 16" fill="currentColor">
+                <circle cx="8" cy="5" r="3"/>
+                <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6v1H2v-1z"/>
+              </svg>
+              ${p.name}
+            </div>
+          </td>
+          <td>${p.dob}</td>
+          <td>${p.condition.code} ${p.condition.name}</td>
+          <td><span class="patient-status ${p.risk}-risk">${p.risk}</span></td>
+          <td>
+            <div class="actions">
+              <button class="action-btn" title="Edit">✎</button>
+              <button class="action-btn" title="Copy">⎘</button>
+              <button class="action-btn" title="Call">☎</button>
+            </div>
+          </td>
+        </tr>
       `).join('');
     }
 
-    function updateTileStatuses() {
-      tiles.forEach(tile => {
-        if (Math.random() > 0.9) {
-          tile.agent = pick(AGENTS);
-        }
-      });
-      renderTiles();
-    }
+    // Modal
+    function openPatient(patient) {
+      document.getElementById('modal-title').textContent = patient.name;
+      document.getElementById('detail-id').textContent = patient.id;
+      document.getElementById('detail-condition').textContent = `${patient.condition.code} ${patient.condition.name}`;
+      document.getElementById('detail-dob').textContent = patient.dob;
+      document.getElementById('detail-status').innerHTML = `<span class="patient-status ${patient.risk}-risk">${patient.risk}</span>`;
+      document.getElementById('detail-agent').textContent = patient.agent + ' Agent';
 
-    // ─── PATIENT MODAL ──────────────────────────────────
-    let currentPatient = null;
+      const messages = [
+        {type: 'patient', text: "I've been experiencing " + patient.condition.name.toLowerCase(), time: '14:23'},
+        {type: 'ai', text: "I understand. Let me review your symptoms and medical history.", time: '14:24'},
+        {type: 'patient', text: "It started a few days ago", time: '14:24'},
+        {type: 'ai', text: "Based on your symptoms, I'm diagnosing this as " + patient.condition.code + ". I'll prepare a treatment plan.", time: '14:25'}
+      ];
 
-    function openPatientModal(tile) {
-      currentPatient = tile;
-      document.getElementById('modal-title').textContent = `${tile.id} • ${tile.condition.code} ${tile.condition.name}`;
+      const chatEl = document.getElementById('chat-messages');
+      chatEl.innerHTML = messages.map(m => `
+        <div class="chat-message ${m.type}">
+          <div class="message-bubble">${m.text}</div>
+          <div class="message-time">${m.time}</div>
+        </div>
+      `).join('');
+
       document.getElementById('patient-modal').classList.add('active');
-
-      startConversationSimulation();
-      startReasoningSimulation();
-      startEMRSimulation();
     }
 
     function closeModal() {
       document.getElementById('patient-modal').classList.remove('active');
-      currentPatient = null;
-    }
-
-    // Conversation Simulation
-    function startConversationSimulation() {
-      const panel = document.getElementById('conversation-panel');
-      const messages = [
-        {type: 'patient', text: "I've been having chest pain and shortness of breath", time: '14:23'},
-        {type: 'ai', text: "I understand. Can you describe the chest pain? Is it sharp, dull, or pressure-like?", time: '14:23'},
-        {type: 'patient', text: "It feels like pressure, and it gets worse when I exert myself", time: '14:24'},
-        {type: 'ai', text: "How long have you been experiencing these symptoms?", time: '14:24'},
-        {type: 'patient', text: "About 3 days now", time: '14:24'},
-        {type: 'ai', text: "Thank you. I'm going to recommend some tests and get you scheduled with a cardiologist.", time: '14:25'}
-      ];
-
-      panel.innerHTML = '';
-      let i = 0;
-
-      function addMessage() {
-        if (i < messages.length) {
-          const msg = messages[i];
-          panel.innerHTML += `
-            <div class="chat-message ${msg.type}">
-              <div class="message-bubble">${msg.text}</div>
-              <div class="message-time">${msg.time}</div>
-            </div>
-          `;
-          panel.scrollTop = panel.scrollHeight;
-          i++;
-          setTimeout(addMessage, 1500);
-        } else {
-          panel.innerHTML += `<div class="chat-message ai"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
-        }
-      }
-
-      addMessage();
-    }
-
-    // Reasoning Simulation
-    function startReasoningSimulation() {
-      const panel = document.getElementById('reasoning-panel');
-      const steps = [
-        {agent: 'Clinician', steps: [
-          'Analyzing symptoms: chest pain + shortness of breath',
-          'Cross-referencing patient history',
-          'Symptom severity assessment: HIGH',
-          'Differential diagnosis complete'
-        ], confidence: 94},
-        {agent: 'QA', steps: [
-          'Validating ICD-10 code selection',
-          'Checking clinical guidelines compliance',
-          'Reviewing recommended treatment plan'
-        ], confidence: 97},
-        {agent: 'Admin', steps: [
-          'Preparing EHR documentation',
-          'Scheduling follow-up appointments',
-          'Processing referral to cardiology'
-        ], confidence: 100}
-      ];
-
-      panel.innerHTML = '';
-      let agentIdx = 0;
-
-      function addReasoning() {
-        if (agentIdx < steps.length) {
-          const agent = steps[agentIdx];
-          let html = `
-            <div class="reasoning-item">
-              <div class="reasoning-agent">
-                <div class="reasoning-agent-icon">AI</div>
-                <div class="reasoning-agent-name">${agent.agent} Agent</div>
-              </div>
-          `;
-          agent.steps.forEach(step => {
-            html += `<div class="reasoning-step">${step}</div>`;
-          });
-          html += `
-              <div class="confidence-bar">
-                <div class="confidence-fill" style="width:${agent.confidence}%"></div>
-              </div>
-              <div class="confidence-label">Confidence: ${agent.confidence}%</div>
-            </div>
-          `;
-          panel.innerHTML += html;
-          agentIdx++;
-          setTimeout(addReasoning, 2000);
-        }
-      }
-
-      addReasoning();
-    }
-
-    // EMR Activity Simulation
-    function startEMRSimulation() {
-      const panel = document.getElementById('emr-activity');
-      const activities = [
-        {text: 'Opened patient chart', time: '2s ago'},
-        {text: 'Retrieved medical history', time: '4s ago'},
-        {text: 'Documenting chief complaint', time: '7s ago'},
-        {text: 'Updating vitals and assessment', time: '10s ago'},
-        {text: 'Creating order: ECG', time: '13s ago'},
-        {text: 'Creating order: Chest X-Ray', time: '15s ago'},
-        {text: 'Submitting referral to cardiology', time: '18s ago'}
-      ];
-
-      panel.innerHTML = '';
-      let i = 0;
-
-      function addActivity() {
-        if (i < activities.length) {
-          const act = activities[i];
-          panel.innerHTML += `
-            <div class="activity-item">
-              <span class="activity-icon">✓</span>
-              <span class="activity-text">${act.text}</span>
-              <span class="activity-time">${act.time}</span>
-            </div>
-          `;
-          i++;
-          setTimeout(addActivity, 2000);
-        }
-      }
-
-      addActivity();
-    }
-
-    // ─── ESCALATIONS ────────────────────────────────────
-    const sidebarContent = document.getElementById('sidebar-content');
-    let escalations = {
-      urgent: [],
-      warnings: [],
-      resolved: []
-    };
-
-    function updateEscalations() {
-      if (Math.random() > 0.7 && escalations.urgent.length < 3) {
-        escalations.urgent.push({
-          title: 'High-Risk Patient Flagged',
-          desc: 'PT-' + rnd(1000,9999) + ' requires immediate clinician review',
-          time: 'Just now'
-        });
-      }
-
-      if (Math.random() > 0.6 && escalations.warnings.length < 5) {
-        escalations.warnings.push({
-          title: 'QA Confidence Below Threshold',
-          desc: 'Diagnosis confidence 87% for ' + pick(CONDITIONS).code,
-          time: rnd(1,5) + 'm ago'
-        });
-      }
-
-      if (escalations.urgent.length > 0 && Math.random() > 0.8) {
-        const resolved = escalations.urgent.shift();
-        resolved.time = 'Just now';
-        escalations.resolved.unshift(resolved);
-        escalations.resolved = escalations.resolved.slice(0, 8);
-      }
-
-      renderEscalations();
-    }
-
-    function renderEscalations() {
-      const activeTab = document.querySelector('.sidebar-tab.active').dataset.tab;
-      const items = escalations[activeTab] || [];
-
-      sidebarContent.innerHTML = items.length === 0
-        ? '<p style="text-align:center;color:#718096;padding:20px;font-size:13px;">No items</p>'
-        : items.map(item => `
-          <div class="escalation-item ${activeTab}">
-            <div class="escalation-header">
-              <span class="escalation-title">${item.title}</span>
-              <span class="escalation-time">${item.time}</span>
-            </div>
-            <div class="escalation-desc">${item.desc}</div>
-          </div>
-        `).join('');
-    }
-
-    document.querySelectorAll('.sidebar-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        renderEscalations();
-      });
-    });
-
-    // ─── TERMINAL LOG ───────────────────────────────────
-    const terminalLog = document.getElementById('terminal-log');
-    const logEvents = [
-      {type: 'ok', msg: 'EMR sync complete • patient data updated'},
-      {type: 'ok', msg: 'Prescription faxed to pharmacy • confirmation received'},
-      {type: 'info', msg: 'Lab order submitted • ID:LAB-'},
-      {type: 'ok', msg: 'Claim submitted • payer acknowledgment received'},
-      {type: 'ok', msg: 'QA validation passed • confidence 97%'},
-      {type: 'ok', msg: 'Patient notification sent • SMS delivered'},
-      {type: 'info', msg: 'Follow-up scheduled • calendar updated'},
-      {type: 'ok', msg: 'Prior authorization approved • reference:PA-'},
-      {type: 'info', msg: 'Referral sent • specialist notified'},
-      {type: 'ok', msg: 'Documentation complete • note signed'},
-      {type: 'warn', msg: 'Upstream latency detected • retrying'},
-      {type: 'ok', msg: 'Agent handoff complete • admin → rcm'}
-    ];
-
-    function startTerminalLog() {
-      setInterval(() => {
-        const event = pick(logEvents);
-        const d = new Date();
-        const time = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-
-        let msg = event.msg;
-        if (msg.includes('ID:LAB-')) msg = msg.replace('ID:LAB-', 'ID:LAB-' + rnd(1000,9999));
-        if (msg.includes('reference:PA-')) msg = msg.replace('reference:PA-', 'reference:PA-' + rnd(10000,99999));
-
-        const logLine = document.createElement('div');
-        logLine.className = 'log-line';
-        logLine.innerHTML = `
-          <span class="log-time">${time}</span>
-          <span class="log-type ${event.type}">${event.type.toUpperCase().padEnd(4)}</span>
-          <span class="log-msg">${msg}</span>
-        `;
-
-        terminalLog.insertBefore(logLine, terminalLog.firstChild);
-
-        // Keep only last 30 lines
-        while (terminalLog.children.length > 30) {
-          terminalLog.removeChild(terminalLog.lastChild);
-        }
-      }, rnd(1500, 3500));
     }
   </script>
 </body>
