@@ -205,7 +205,6 @@
       transition: all 0.2s;
       cursor: pointer;
       position: relative;
-      overflow: hidden;
     }
 
     .patient-tile:hover {
@@ -265,7 +264,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-bottom: 10px;
       font-size: 12px;
       color: #718096;
     }
@@ -307,20 +305,6 @@
     @keyframes glow {
       0%, 100% { box-shadow: 0 0 0px #9333ea; }
       50% { box-shadow: 0 0 8px #9333ea; }
-    }
-
-    .sentiment-pulse {
-      width: 100%;
-      height: 32px;
-      position: relative;
-      margin-top: 8px;
-    }
-
-    .pulse-line {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
     }
 
     /* Escalation Sidebar */
@@ -405,81 +389,377 @@
       line-height: 1.5;
     }
 
-    /* System Ticker */
-    .system-ticker {
-      background: #eff6ff;
-      border-top: 1px solid #bfdbfe;
-      padding: 12px 24px;
+    /* Terminal Log Ticker */
+    .terminal-log {
+      background: #0a0d10;
+      border-top: 1px solid #1b2025;
+      padding: 8px 16px;
+      height: 120px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: #00ffff;
+      line-height: 1.4;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2px;
+      animation: logFadeIn 0.3s ease;
+    }
+
+    @keyframes logFadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-time {
+      color: #7d8a96;
+      font-size: 10px;
+    }
+
+    .log-type {
+      font-weight: 600;
+      min-width: 50px;
+    }
+
+    .log-type.ok { color: #36d399; }
+    .log-type.info { color: #00c6c7; }
+    .log-type.warn { color: #ffd166; }
+
+    .log-msg {
+      color: #cfe7e7;
+    }
+
+    /* Patient Detail Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-container {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 1400px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a202c;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #718096;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .modal-close:hover {
+      color: #1a202c;
+    }
+
+    .modal-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: #e2e8f0;
       overflow: hidden;
-      position: relative;
-      height: 48px;
+    }
+
+    .modal-panel {
+      background: white;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #4a5568;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       flex-shrink: 0;
     }
 
-    .ticker-content {
+    .panel-content {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    /* Conversation Panel */
+    .chat-message {
+      margin-bottom: 16px;
       display: flex;
-      gap: 32px;
-      animation: scroll 40s linear infinite;
-      white-space: nowrap;
+      flex-direction: column;
     }
 
-    @keyframes scroll {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+    .chat-message.patient {
+      align-items: flex-start;
     }
 
-    .ticker-item {
+    .chat-message.ai {
+      align-items: flex-end;
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .chat-message.patient .message-bubble {
+      background: #f3f4f6;
+      color: #1a202c;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-message.ai .message-bubble {
+      background: #667eea;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 10px 14px;
+      background: #f3f4f6;
+      border-radius: 12px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #9ca3af;
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+    }
+
+    /* Reasoning Panel */
+    .reasoning-item {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .reasoning-item:last-child {
+      border-bottom: none;
+    }
+
+    .reasoning-agent {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #1e40af;
-    }
-
-    .ticker-icon {
-      color: #16a34a;
-      font-weight: 700;
-    }
-
-    /* Hover Popover */
-    .thinking-popover {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      margin-top: 8px;
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      z-index: 100;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .patient-tile:hover .thinking-popover {
-      display: block;
-    }
-
-    .popover-title {
-      font-weight: 600;
-      color: #1a202c;
+      gap: 8px;
       margin-bottom: 8px;
     }
 
-    .reasoning-step {
+    .reasoning-agent-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #667eea;
       display: flex;
-      gap: 8px;
-      margin-bottom: 6px;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .reasoning-agent-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .reasoning-step {
+      font-size: 12px;
       color: #4a5568;
+      margin: 4px 0 4px 28px;
+      line-height: 1.6;
     }
 
     .reasoning-step::before {
       content: "→";
       color: #667eea;
+      margin-right: 8px;
       font-weight: 700;
+    }
+
+    .confidence-bar {
+      margin: 8px 0 0 28px;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.5s ease;
+    }
+
+    .confidence-label {
+      font-size: 10px;
+      color: #9ca3af;
+      margin: 4px 0 0 28px;
+    }
+
+    /* EMR Panel */
+    .vm-container {
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 16px;
+    }
+
+    .vm-header {
+      background: #2d2d2d;
+      padding: 8px 12px;
+      border-radius: 4px 4px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .vm-title {
+      font-size: 11px;
+      color: #9ca3af;
+      font-family: monospace;
+    }
+
+    .vm-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #10b981;
+    }
+
+    .vm-status-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    .vm-screen {
+      background: white;
+      aspect-ratio: 16/10;
+      border-radius: 0 0 4px 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .vm-screen-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      color: #9ca3af;
+      font-size: 12px;
+    }
+
+    .vm-cursor {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+      animation: moveCursor 8s ease-in-out infinite;
+    }
+
+    @keyframes moveCursor {
+      0%, 100% { top: 20%; left: 30%; }
+      25% { top: 40%; left: 60%; }
+      50% { top: 60%; left: 40%; }
+      75% { top: 30%; left: 70%; }
+    }
+
+    .emr-activity {
+      margin-top: 16px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      font-size: 12px;
+      color: #4a5568;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .activity-icon {
+      color: #10b981;
+      font-weight: 700;
+    }
+
+    .activity-text {
+      flex: 1;
+    }
+
+    .activity-time {
+      font-size: 10px;
+      color: #9ca3af;
     }
   </style>
 </head>
@@ -524,7 +804,7 @@
       <div class="tiles-section">
         <div class="tiles-header">
           <h2>Live Patient Encounters</h2>
-          <p id="active-count">42 active sessions</p>
+          <p id="active-count">36 active sessions</p>
         </div>
         <div class="tiles-grid" id="tiles-grid"></div>
       </div>
@@ -540,9 +820,53 @@
       </div>
     </div>
 
-    <!-- System Ticker -->
-    <div class="system-ticker">
-      <div class="ticker-content" id="ticker"></div>
+    <!-- Terminal Log -->
+    <div class="terminal-log" id="terminal-log"></div>
+  </div>
+
+  <!-- Patient Detail Modal -->
+  <div class="modal-overlay" id="patient-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">Patient Details</div>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <!-- Conversation Panel -->
+        <div class="modal-panel">
+          <div class="panel-header">Conversation</div>
+          <div class="panel-content" id="conversation-panel"></div>
+        </div>
+
+        <!-- AI Reasoning Panel -->
+        <div class="modal-panel">
+          <div class="panel-header">AI Reasoning</div>
+          <div class="panel-content" id="reasoning-panel"></div>
+        </div>
+
+        <!-- EMR Computer Use Panel -->
+        <div class="modal-panel">
+          <div class="panel-header">Computer Use • EMR</div>
+          <div class="panel-content" id="emr-panel">
+            <div class="vm-container">
+              <div class="vm-header">
+                <span class="vm-title">VM-1847 • Epic MyChart</span>
+                <div class="vm-status">
+                  <span class="vm-status-dot"></span>
+                  ACTIVE
+                </div>
+              </div>
+              <div class="vm-screen">
+                <div class="vm-screen-placeholder">EMR Interface</div>
+                <svg class="vm-cursor" viewBox="0 0 16 16">
+                  <path d="M0 0 L0 14 L4 10 L7 16 L9 15 L6 9 L11 9 Z" fill="#1a202c" />
+                </svg>
+              </div>
+            </div>
+            <div class="emr-activity" id="emr-activity"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -575,12 +899,12 @@
     // ─── DATA ───────────────────────────────────────────
     const CONDITIONS = [
       {code:'R07.9', name:'Chest Pain', severity:'high'},
+      {code:'J18.9', name:'Pneumonia', severity:'high'},
       {code:'E11.9', name:'Type 2 Diabetes', severity:'medium'},
-      {code:'I10', name:'Hypertension', severity:'low'},
+      {code:'I10', name:'Hypertension', severity:'medium'},
       {code:'J45.909', name:'Asthma', severity:'medium'},
       {code:'F32.9', name:'Depression', severity:'low'},
       {code:'N39.0', name:'UTI', severity:'low'},
-      {code:'J18.9', name:'Pneumonia', severity:'high'},
       {code:'M54.5', name:'Low Back Pain', severity:'low'},
       {code:'K21.0', name:'GERD', severity:'low'}
     ];
@@ -599,7 +923,7 @@
     function initDashboard() {
       generateTiles();
       updateEscalations();
-      startTicker();
+      startTerminalLog();
 
       setInterval(updateTileStatuses, 3000);
       setInterval(updateEscalations, 5000);
@@ -611,42 +935,58 @@
 
     function generateTiles() {
       tiles = [];
-      for (let i = 0; i < 36; i++) {
-        const cond = pick(CONDITIONS);
-        const hasMemory = Math.random() > 0.6;
-        const risk = cond.severity;
 
-        tiles.push({
-          id: pick(PATIENTS) + '-' + rnd(100,999),
-          condition: cond,
-          agent: pick(AGENTS),
-          risk,
-          hasMemory,
-          sentiment: generateSentiment(),
-          reasoning: generateReasoning(cond)
-        });
+      // Generate 36 tiles with controlled risk distribution
+      // 5-10% high risk = 2-4 tiles
+      const highRiskCount = rnd(2, 3);
+      const mediumRiskCount = rnd(10, 14);
+      const lowRiskCount = 36 - highRiskCount - mediumRiskCount;
+
+      // Add high risk tiles
+      for (let i = 0; i < highRiskCount; i++) {
+        const cond = pick(CONDITIONS.filter(c => c.severity === 'high'));
+        tiles.push(createTile(cond, 'high'));
       }
+
+      // Add medium risk tiles
+      for (let i = 0; i < mediumRiskCount; i++) {
+        const cond = pick(CONDITIONS.filter(c => c.severity === 'medium'));
+        tiles.push(createTile(cond, 'medium'));
+      }
+
+      // Add low risk tiles
+      for (let i = 0; i < lowRiskCount; i++) {
+        const cond = pick(CONDITIONS.filter(c => c.severity === 'low'));
+        tiles.push(createTile(cond, 'low'));
+      }
+
       renderTiles();
     }
 
-    function generateSentiment() {
-      return Array.from({length: 20}, () => rnd(20, 80));
+    function createTile(cond, risk) {
+      return {
+        id: pick(PATIENTS) + '-' + rnd(100,999),
+        condition: cond,
+        agent: pick(AGENTS),
+        risk,
+        hasMemory: Math.random() > 0.6,
+        reasoning: generateReasoning(cond)
+      };
     }
 
     function generateReasoning(cond) {
-      const steps = [
+      return [
         'Patient reports ' + cond.name.toLowerCase(),
         'Reviewed patient history and current medications',
         'Assessed symptom severity: ' + cond.severity,
         'Determined ICD-10 code: ' + cond.code,
         'Recommended treatment protocol approved'
       ];
-      return steps;
     }
 
     function renderTiles() {
       tilesGrid.innerHTML = tiles.map(tile => `
-        <div class="patient-tile ${tile.risk}-risk">
+        <div class="patient-tile ${tile.risk}-risk" onclick='openPatientModal(${JSON.stringify(tile).replace(/'/g, "&apos;")})'>
           <div class="tile-header">
             <span class="patient-id">${tile.id}</span>
             <span class="risk-badge ${tile.risk}">${tile.risk}</span>
@@ -659,33 +999,158 @@
             ${tile.agent} Agent
             ${tile.hasMemory ? '<span class="memory-indicator"><span class="memory-icon"></span>Context Retrieved</span>' : ''}
           </div>
-          <div class="sentiment-pulse">
-            <svg class="pulse-line" viewBox="0 0 100 32">
-              <polyline
-                points="${tile.sentiment.map((v,i) => `${i*5},${32-v/3}`).join(' ')}"
-                fill="none"
-                stroke="${tile.risk === 'high' ? '#dc2626' : tile.risk === 'medium' ? '#f59e0b' : '#16a34a'}"
-                stroke-width="2"
-              />
-            </svg>
-          </div>
-          <div class="thinking-popover">
-            <div class="popover-title">AI Clinical Reasoning</div>
-            ${tile.reasoning.map(step => `<div class="reasoning-step">${step}</div>`).join('')}
-          </div>
         </div>
       `).join('');
     }
 
     function updateTileStatuses() {
       tiles.forEach(tile => {
-        tile.sentiment.shift();
-        tile.sentiment.push(rnd(20, 80));
         if (Math.random() > 0.9) {
           tile.agent = pick(AGENTS);
         }
       });
       renderTiles();
+    }
+
+    // ─── PATIENT MODAL ──────────────────────────────────
+    let currentPatient = null;
+
+    function openPatientModal(tile) {
+      currentPatient = tile;
+      document.getElementById('modal-title').textContent = `${tile.id} • ${tile.condition.code} ${tile.condition.name}`;
+      document.getElementById('patient-modal').classList.add('active');
+
+      startConversationSimulation();
+      startReasoningSimulation();
+      startEMRSimulation();
+    }
+
+    function closeModal() {
+      document.getElementById('patient-modal').classList.remove('active');
+      currentPatient = null;
+    }
+
+    // Conversation Simulation
+    function startConversationSimulation() {
+      const panel = document.getElementById('conversation-panel');
+      const messages = [
+        {type: 'patient', text: "I've been having chest pain and shortness of breath", time: '14:23'},
+        {type: 'ai', text: "I understand. Can you describe the chest pain? Is it sharp, dull, or pressure-like?", time: '14:23'},
+        {type: 'patient', text: "It feels like pressure, and it gets worse when I exert myself", time: '14:24'},
+        {type: 'ai', text: "How long have you been experiencing these symptoms?", time: '14:24'},
+        {type: 'patient', text: "About 3 days now", time: '14:24'},
+        {type: 'ai', text: "Thank you. I'm going to recommend some tests and get you scheduled with a cardiologist.", time: '14:25'}
+      ];
+
+      panel.innerHTML = '';
+      let i = 0;
+
+      function addMessage() {
+        if (i < messages.length) {
+          const msg = messages[i];
+          panel.innerHTML += `
+            <div class="chat-message ${msg.type}">
+              <div class="message-bubble">${msg.text}</div>
+              <div class="message-time">${msg.time}</div>
+            </div>
+          `;
+          panel.scrollTop = panel.scrollHeight;
+          i++;
+          setTimeout(addMessage, 1500);
+        } else {
+          panel.innerHTML += `<div class="chat-message ai"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+        }
+      }
+
+      addMessage();
+    }
+
+    // Reasoning Simulation
+    function startReasoningSimulation() {
+      const panel = document.getElementById('reasoning-panel');
+      const steps = [
+        {agent: 'Clinician', steps: [
+          'Analyzing symptoms: chest pain + shortness of breath',
+          'Cross-referencing patient history',
+          'Symptom severity assessment: HIGH',
+          'Differential diagnosis complete'
+        ], confidence: 94},
+        {agent: 'QA', steps: [
+          'Validating ICD-10 code selection',
+          'Checking clinical guidelines compliance',
+          'Reviewing recommended treatment plan'
+        ], confidence: 97},
+        {agent: 'Admin', steps: [
+          'Preparing EHR documentation',
+          'Scheduling follow-up appointments',
+          'Processing referral to cardiology'
+        ], confidence: 100}
+      ];
+
+      panel.innerHTML = '';
+      let agentIdx = 0;
+
+      function addReasoning() {
+        if (agentIdx < steps.length) {
+          const agent = steps[agentIdx];
+          let html = `
+            <div class="reasoning-item">
+              <div class="reasoning-agent">
+                <div class="reasoning-agent-icon">AI</div>
+                <div class="reasoning-agent-name">${agent.agent} Agent</div>
+              </div>
+          `;
+          agent.steps.forEach(step => {
+            html += `<div class="reasoning-step">${step}</div>`;
+          });
+          html += `
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width:${agent.confidence}%"></div>
+              </div>
+              <div class="confidence-label">Confidence: ${agent.confidence}%</div>
+            </div>
+          `;
+          panel.innerHTML += html;
+          agentIdx++;
+          setTimeout(addReasoning, 2000);
+        }
+      }
+
+      addReasoning();
+    }
+
+    // EMR Activity Simulation
+    function startEMRSimulation() {
+      const panel = document.getElementById('emr-activity');
+      const activities = [
+        {text: 'Opened patient chart', time: '2s ago'},
+        {text: 'Retrieved medical history', time: '4s ago'},
+        {text: 'Documenting chief complaint', time: '7s ago'},
+        {text: 'Updating vitals and assessment', time: '10s ago'},
+        {text: 'Creating order: ECG', time: '13s ago'},
+        {text: 'Creating order: Chest X-Ray', time: '15s ago'},
+        {text: 'Submitting referral to cardiology', time: '18s ago'}
+      ];
+
+      panel.innerHTML = '';
+      let i = 0;
+
+      function addActivity() {
+        if (i < activities.length) {
+          const act = activities[i];
+          panel.innerHTML += `
+            <div class="activity-item">
+              <span class="activity-icon">✓</span>
+              <span class="activity-text">${act.text}</span>
+              <span class="activity-time">${act.time}</span>
+            </div>
+          `;
+          i++;
+          setTimeout(addActivity, 2000);
+        }
+      }
+
+      addActivity();
     }
 
     // ─── ESCALATIONS ────────────────────────────────────
@@ -697,7 +1162,6 @@
     };
 
     function updateEscalations() {
-      // Add new urgent if needed
       if (Math.random() > 0.7 && escalations.urgent.length < 3) {
         escalations.urgent.push({
           title: 'High-Risk Patient Flagged',
@@ -706,7 +1170,6 @@
         });
       }
 
-      // Add warnings
       if (Math.random() > 0.6 && escalations.warnings.length < 5) {
         escalations.warnings.push({
           title: 'QA Confidence Below Threshold',
@@ -715,7 +1178,6 @@
         });
       }
 
-      // Move urgent to resolved occasionally
       if (escalations.urgent.length > 0 && Math.random() > 0.8) {
         const resolved = escalations.urgent.shift();
         resolved.time = 'Just now';
@@ -751,25 +1213,48 @@
       });
     });
 
-    // ─── SYSTEM TICKER ──────────────────────────────────
-    const ticker = document.getElementById('ticker');
-    const tickerEvents = [
-      '✓ EMR Synced',
-      '✓ Script Faxed',
-      '✓ Lab Order Sent',
-      '✓ Claim Submitted',
-      '✓ QA Passed',
-      '✓ Patient Notified',
-      '✓ Follow-up Scheduled',
-      '✓ Prior Auth Approved',
-      '✓ Referral Sent'
+    // ─── TERMINAL LOG ───────────────────────────────────
+    const terminalLog = document.getElementById('terminal-log');
+    const logEvents = [
+      {type: 'ok', msg: 'EMR sync complete • patient data updated'},
+      {type: 'ok', msg: 'Prescription faxed to pharmacy • confirmation received'},
+      {type: 'info', msg: 'Lab order submitted • ID:LAB-'},
+      {type: 'ok', msg: 'Claim submitted • payer acknowledgment received'},
+      {type: 'ok', msg: 'QA validation passed • confidence 97%'},
+      {type: 'ok', msg: 'Patient notification sent • SMS delivered'},
+      {type: 'info', msg: 'Follow-up scheduled • calendar updated'},
+      {type: 'ok', msg: 'Prior authorization approved • reference:PA-'},
+      {type: 'info', msg: 'Referral sent • specialist notified'},
+      {type: 'ok', msg: 'Documentation complete • note signed'},
+      {type: 'warn', msg: 'Upstream latency detected • retrying'},
+      {type: 'ok', msg: 'Agent handoff complete • admin → rcm'}
     ];
 
-    function startTicker() {
-      const content = [...tickerEvents, ...tickerEvents].map(e =>
-        `<div class="ticker-item"><span class="ticker-icon">✓</span>${e}</div>`
-      ).join('');
-      ticker.innerHTML = content;
+    function startTerminalLog() {
+      setInterval(() => {
+        const event = pick(logEvents);
+        const d = new Date();
+        const time = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+        let msg = event.msg;
+        if (msg.includes('ID:LAB-')) msg = msg.replace('ID:LAB-', 'ID:LAB-' + rnd(1000,9999));
+        if (msg.includes('reference:PA-')) msg = msg.replace('reference:PA-', 'reference:PA-' + rnd(10000,99999));
+
+        const logLine = document.createElement('div');
+        logLine.className = 'log-line';
+        logLine.innerHTML = `
+          <span class="log-time">${time}</span>
+          <span class="log-type ${event.type}">${event.type.toUpperCase().padEnd(4)}</span>
+          <span class="log-msg">${msg}</span>
+        `;
+
+        terminalLog.insertBefore(logLine, terminalLog.firstChild);
+
+        // Keep only last 30 lines
+        while (terminalLog.children.length > 30) {
+          terminalLog.removeChild(terminalLog.lastChild);
+        }
+      }, rnd(1500, 3500));
     }
   </script>
 </body>
