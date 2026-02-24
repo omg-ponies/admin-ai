@@ -154,6 +154,59 @@
       z-index: 1;
     }
 
+    /* Event Ticker */
+    .event-ticker {
+      background: linear-gradient(90deg, rgba(184,232,227,0.3) 0%, rgba(232,245,243,0.3) 100%);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      overflow: hidden;
+      position: relative;
+      height: 36px;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticker-content {
+      display: flex;
+      gap: 40px;
+      animation: ticker-scroll 40s linear infinite;
+      white-space: nowrap;
+      padding-left: 100%;
+    }
+
+    @keyframes ticker-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      font-size: 13px;
+      color: #1a1a1a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ticker-icon {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .ticker-icon.warning {
+      background: #f59e0b;
+    }
+
+    .ticker-icon.alert {
+      background: #ef4444;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
     /* Top Nav */
     .top-nav {
       background: rgba(255,255,255,0.95);
@@ -380,6 +433,58 @@
     @keyframes glow {
       0%, 100% { box-shadow: 0 0 0px #9333ea; }
       50% { box-shadow: 0 0 6px #9333ea; }
+    }
+
+    /* Live Activity Status */
+    .activity-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #10b981;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .activity-status.processing {
+      color: #3b82f6;
+    }
+
+    .activity-status.warning {
+      color: #f59e0b;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .agent-icon.active {
+      animation: agent-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes agent-pulse {
+      0%, 100% { box-shadow: 0 0 0px rgba(26, 26, 26, 0.4); }
+      50% { box-shadow: 0 0 8px rgba(26, 26, 26, 0.6); }
+    }
+
+    .card-timestamp {
+      font-size: 11px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    /* Risk transition animation */
+    .patient-card.transitioning {
+      animation: risk-change 1s ease-in-out;
+    }
+
+    @keyframes risk-change {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
     }
 
     /* Modal */
@@ -774,6 +879,11 @@
       </div>
     </div>
 
+    <!-- Event Ticker -->
+    <div class="event-ticker">
+      <div class="ticker-content" id="ticker-content"></div>
+    </div>
+
     <div class="main-content">
       <div class="page-header">
         <div>
@@ -885,6 +995,8 @@
     function initDashboard() {
       generateTiles();
       renderTiles();
+      startEventTicker();
+      startLiveUpdates();
     }
 
     function generateTiles() {
@@ -907,35 +1019,166 @@
       }
     }
 
+    const STATUSES = [
+      {text: 'Agent processing...', class: 'processing'},
+      {text: 'QA validation', class: 'processing'},
+      {text: 'Sending to EHR', class: 'processing'},
+      {text: 'Claim submitted', class: ''},
+      {text: 'Prescription sent', class: ''},
+      {text: 'Awaiting response', class: 'warning'}
+    ];
+
     function createTile(cond, risk) {
+      const now = Date.now();
       return {
         id: pick(PATIENTS) + '-' + rnd(100,999),
         condition: cond,
         agent: pick(AGENTS),
         risk,
-        hasMemory: Math.random() > 0.6
+        hasMemory: Math.random() > 0.6,
+        status: Math.random() > 0.3 ? pick(STATUSES) : null,
+        timestamp: now - rnd(5000, 120000), // 5s to 2min ago
+        isActive: Math.random() > 0.5
       };
+    }
+
+    function formatTimestamp(timestamp) {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      return `${Math.floor(minutes / 60)}h ago`;
     }
 
     function renderTiles() {
       const grid = document.getElementById('patient-grid');
-      grid.innerHTML = tiles.map(tile => `
-        <div class="patient-card ${tile.risk}-risk" onclick='openPatient(${JSON.stringify(tile).replace(/'/g, "&apos;")})'>
+      grid.innerHTML = tiles.map((tile, idx) => `
+        <div class="patient-card ${tile.risk}-risk" data-tile-index="${idx}" onclick='openPatient(${JSON.stringify(tile).replace(/'/g, "&apos;")})'>
           <div class="card-header">
             <span class="patient-id">${tile.id}</span>
             <span class="risk-badge ${tile.risk}">${tile.risk}</span>
           </div>
+          ${tile.status ? `<div class="activity-status ${tile.status.class}"><span class="status-dot"></span>${tile.status.text}</div>` : ''}
           <div class="condition">
             ${tile.condition.name}
             <div class="condition-code">${tile.condition.code}</div>
           </div>
           <div class="agent-info">
-            <div class="agent-icon">AI</div>
+            <div class="agent-icon ${tile.isActive ? 'active' : ''}">AI</div>
             ${tile.agent} Agent
             ${tile.hasMemory ? '<span class="memory-indicator"><span class="memory-icon"></span>Context</span>' : ''}
           </div>
+          <div class="card-timestamp" data-timestamp="${tile.timestamp}">${formatTimestamp(tile.timestamp)}</div>
         </div>
       `).join('');
+    }
+
+    // Event Ticker
+    const TICKER_EVENTS = [
+      {text: 'Diagnosis confirmed', icon: '', patient: true},
+      {text: 'QA passed', icon: '', patient: true},
+      {text: 'Prescription sent to pharmacy', icon: '', patient: true},
+      {text: 'Risk elevated to MEDIUM', icon: 'warning', patient: true},
+      {text: 'Risk reduced to LOW', icon: '', patient: true},
+      {text: 'EHR documentation complete', icon: '', patient: true},
+      {text: 'Claim submitted to payer', icon: '', patient: true},
+      {text: 'Referral approved', icon: '', patient: true},
+      {text: 'Lab results received', icon: 'warning', patient: true},
+      {text: 'Follow-up scheduled', icon: '', patient: true}
+    ];
+
+    function startEventTicker() {
+      const ticker = document.getElementById('ticker-content');
+
+      // Generate initial events
+      function generateEvents() {
+        const events = [];
+        for (let i = 0; i < 20; i++) {
+          const event = pick(TICKER_EVENTS);
+          const patient = event.patient ? pick(PATIENTS) + '-' + rnd(100,999) : '';
+          const code = event.patient ? pick(CONDITIONS).code : '';
+          events.push(`
+            <div class="ticker-item">
+              <span class="ticker-icon ${event.icon}"></span>
+              ${patient} • ${event.text} ${code ? '• ' + code : ''}
+            </div>
+          `);
+        }
+        // Double the events for seamless loop
+        return events.join('') + events.join('');
+      }
+
+      ticker.innerHTML = generateEvents();
+
+      // Refresh events periodically to keep it fresh
+      setInterval(() => {
+        ticker.innerHTML = generateEvents();
+      }, 45000);
+    }
+
+    // Live Updates
+    function startLiveUpdates() {
+      // Update timestamps every 5 seconds
+      setInterval(() => {
+        document.querySelectorAll('.card-timestamp').forEach(el => {
+          const timestamp = parseInt(el.dataset.timestamp);
+          el.textContent = formatTimestamp(timestamp);
+        });
+      }, 5000);
+
+      // Randomly change risk levels
+      setInterval(() => {
+        if (tiles.length === 0) return;
+
+        const idx = rnd(0, tiles.length - 1);
+        const tile = tiles[idx];
+        const oldRisk = tile.risk;
+
+        // Occasionally escalate or de-escalate risk
+        if (Math.random() > 0.7) {
+          if (tile.risk === 'low' && Math.random() > 0.5) {
+            tile.risk = 'medium';
+          } else if (tile.risk === 'medium') {
+            tile.risk = Math.random() > 0.5 ? 'high' : 'low';
+          } else if (tile.risk === 'high' && Math.random() > 0.3) {
+            tile.risk = 'medium';
+          }
+
+          if (oldRisk !== tile.risk) {
+            // Re-render and animate
+            const card = document.querySelector(`[data-tile-index="${idx}"]`);
+            if (card) {
+              card.classList.add('transitioning');
+              setTimeout(() => {
+                renderTiles();
+              }, 500);
+            }
+          }
+        }
+
+        // Update status randomly
+        if (Math.random() > 0.6) {
+          tile.status = Math.random() > 0.3 ? pick(STATUSES) : null;
+          tile.isActive = Math.random() > 0.5;
+          renderTiles();
+        }
+      }, 8000);
+
+      // Occasionally add new patients (simulate arrivals)
+      setInterval(() => {
+        if (Math.random() > 0.7 && tiles.length < 40) {
+          const cond = pick(CONDITIONS);
+          const risk = cond.severity === 'high' ? 'high' : (cond.severity === 'medium' ? 'medium' : 'low');
+          const newTile = createTile(cond, risk);
+          tiles.unshift(newTile);
+          renderTiles();
+
+          // Remove oldest if too many
+          if (tiles.length > 40) {
+            tiles.pop();
+          }
+        }
+      }, 15000);
     }
 
     // Modal
