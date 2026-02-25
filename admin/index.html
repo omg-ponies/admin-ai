@@ -581,6 +581,94 @@
       animation: pulse 2s ease-in-out infinite;
     }
 
+    /* Approval Context Banner */
+    .approval-context {
+      background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+      border-bottom: 2px solid #f59e0b;
+      padding: 24px 40px;
+    }
+
+    .approval-context-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: #92400e;
+      margin-bottom: 16px;
+    }
+
+    .approval-action-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #fbbf24;
+      margin-bottom: 16px;
+    }
+
+    .approval-action-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .approval-action-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .approval-reason-text {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .approval-context-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .approve-btn-large, .reject-btn-large, .modify-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .approve-btn-large {
+      background: #10b981;
+      color: white;
+    }
+
+    .approve-btn-large:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .modify-btn {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .modify-btn:hover {
+      background: #2563eb;
+    }
+
+    .reject-btn-large {
+      background: #ef4444;
+      color: white;
+    }
+
+    .reject-btn-large:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
     .condition {
       font-size: 16px;
       color: #1a1a1a;
@@ -1305,6 +1393,36 @@
         <h2 class="modal-title" id="modal-title">Patient Details</h2>
         <button class="modal-close" onclick="closeModal()">×</button>
       </div>
+
+      <!-- Approval Context Banner (hidden by default) -->
+      <div class="approval-context" id="approval-context" style="display: none;">
+        <div class="approval-context-header">
+          <h3>Approval Required</h3>
+        </div>
+        <div class="approval-context-body">
+          <div class="approval-action-card">
+            <div class="approval-action-header">
+              <span class="risk-badge" id="approval-risk"></span>
+              <span class="urgency-badge" id="approval-urgency"></span>
+              <span class="sla-timer" id="approval-sla"></span>
+            </div>
+            <div class="approval-action-text" id="approval-action"></div>
+            <div class="approval-reason-text" id="approval-reason"></div>
+          </div>
+          <div class="approval-context-actions">
+            <button class="approve-btn-large" onclick="approveActionFromModal()">
+              ✓ Approve Action
+            </button>
+            <button class="modify-btn" onclick="modifyAction()">
+              ✏ Modify & Approve
+            </button>
+            <button class="reject-btn-large" onclick="rejectActionFromModal()">
+              ✗ Reject Action
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="progress-timeline" id="progress-timeline">
         <div class="timeline-step" data-stage="intake">
           <div class="timeline-dot"></div>
@@ -1593,7 +1711,7 @@
       queue.innerHTML = approvals.map(approval => {
         const sla = formatSLATime(approval.slaDeadline);
         return `
-          <div class="approval-item ${approval.urgency}" data-approval-id="${approval.id}">
+          <div class="approval-item ${approval.urgency}" data-approval-id="${approval.id}" onclick="openApprovalReview('${approval.id}')">
             <div class="approval-patient">
               <div class="approval-patient-id">${approval.patientId}</div>
               <div class="approval-patient-name">${approval.condition}</div>
@@ -1610,7 +1728,7 @@
                 <span class="sla-time">${sla.text}</span>
               </div>
             </div>
-            <div class="approval-actions">
+            <div class="approval-actions" onclick="event.stopPropagation()">
               <button class="approve-btn" onclick="approveAction('${approval.id}')">Approve</button>
               <button class="reject-btn" onclick="rejectAction('${approval.id}')">Reject</button>
             </div>
@@ -1833,7 +1951,9 @@
 
     function closeModal() {
       document.getElementById('patient-modal').classList.remove('active');
+      document.getElementById('approval-context').style.display = 'none';
       currentPatient = null;
+      currentApproval = null;
       modalIntervals.forEach(clearInterval);
       modalIntervals = [];
     }
@@ -1854,6 +1974,94 @@
       document.querySelectorAll('.modal-panel').forEach((p, i) => {
         p.classList.toggle('active', i === index);
       });
+    }
+
+    // Approval Review Functions
+    let currentApproval = null;
+
+    function openApprovalReview(approvalId) {
+      // Find the approval
+      const approval = approvals.find(a => a.id === approvalId);
+      if (!approval) return;
+
+      currentApproval = approval;
+
+      // Find the associated patient tile
+      let patientTile = tiles.find(t => t.id === approval.patientId);
+      if (!patientTile) {
+        // If patient not in current tiles, create a placeholder
+        patientTile = {
+          id: approval.patientId,
+          condition: {
+            name: approval.patientName,
+            code: approval.condition
+          },
+          confidence: 87,
+          pipelineStage: 2
+        };
+      }
+
+      // Open modal with patient context
+      currentPatient = patientTile;
+      document.getElementById('modal-title').textContent =
+        `${approval.patientId} • ${approval.condition}`;
+
+      // Show approval context banner
+      const approvalContext = document.getElementById('approval-context');
+      approvalContext.style.display = 'block';
+
+      // Populate approval details
+      document.getElementById('approval-risk').textContent = approval.tier;
+      document.getElementById('approval-risk').className = `risk-badge ${approval.tier.toLowerCase()}`;
+
+      document.getElementById('approval-urgency').textContent = approval.urgency;
+      document.getElementById('approval-urgency').className = `urgency-badge ${approval.urgency}`;
+
+      const sla = formatSLATime(approval.slaDeadline);
+      const slaEl = document.getElementById('approval-sla');
+      slaEl.className = `sla-timer ${sla.class}`;
+      slaEl.innerHTML = `<span class="sla-icon">⏱</span><span>${sla.text}</span>`;
+
+      document.getElementById('approval-action').textContent = approval.action;
+      document.getElementById('approval-reason').textContent = approval.reason;
+
+      // Open modal
+      document.getElementById('patient-modal').classList.add('active');
+
+      // Start simulations
+      startConversationSimulation();
+      startReasoningSimulation();
+      startEMRSimulation();
+    }
+
+    function approveActionFromModal() {
+      if (!currentApproval) return;
+
+      // Remove from approvals list
+      approvals = approvals.filter(a => a.id !== currentApproval.id);
+      renderApprovals();
+
+      // Close modal
+      closeModal();
+    }
+
+    function rejectActionFromModal() {
+      if (!currentApproval) return;
+
+      // Could add rejection reason prompt here
+      const reason = prompt('Rejection reason (optional):');
+
+      // Remove from approvals list
+      approvals = approvals.filter(a => a.id !== currentApproval.id);
+      renderApprovals();
+
+      // Close modal
+      closeModal();
+    }
+
+    function modifyAction() {
+      alert('Modify action - would open editor to adjust dose, timing, etc.');
+      // TODO: Implement modification interface
     }
 
     // Conversation Simulation with typing
