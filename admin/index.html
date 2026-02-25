@@ -1241,7 +1241,7 @@
       <h1 class="login-title">Login</h1>
       <form id="login-form">
         <div class="input-group">
-          <input type="email" class="input-field" placeholder="Email" />
+          <input type="text" class="input-field" placeholder="Email" />
         </div>
         <div class="input-group">
           <input type="password" class="input-field" placeholder="Password" id="password-input" autocomplete="off" />
@@ -1468,7 +1468,6 @@
       {action: 'Diagnosis: Suspected MI', tier: 'T4', urgency: 'emergent'}
     ];
 
-    let tiles = [];
     let approvals = [];
 
     function initDashboard() {
@@ -1525,6 +1524,10 @@
     // Approvals management
     function generateApprovals() {
       approvals = [];
+
+      // Don't generate approvals if there are no tiles
+      if (tiles.length === 0) return;
+
       const count = rnd(3, 8);
 
       for (let i = 0; i < count; i++) {
