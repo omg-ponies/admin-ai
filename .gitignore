@@ -1,0 +1,19 @@
+# AWS credentials - NEVER commit these
+.aws/
+*.pem
+*.key
+credentials
+
+# Deployment logs
+deploy.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
