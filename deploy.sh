@@ -89,6 +89,6 @@ fi
 echo ""
 
 echo -e "${GREEN}=== Deployment Complete ===${NC}"
-echo -e "Website URL: ${BLUE}https://admin.ai${NC}"
+echo -e "Website URL: ${BLUE}https://vvv.admin.ai${NC}"
 echo -e "S3 Bucket: ${BLUE}s3://$BUCKET_NAME/${NC}"
 echo ""
