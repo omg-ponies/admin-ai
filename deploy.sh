@@ -13,11 +13,11 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== Admin.ai Deployment to AWS S3 ===${NC}"
+echo -e "${BLUE}=== Admin.ai Next.js Deployment ===${NC}"
 echo ""
 
 # Step 1: Validate AWS credentials
-echo -e "${BLUE}[1/5] Validating AWS credentials...${NC}"
+echo -e "${BLUE}[1/6] Validating AWS credentials...${NC}"
 if ! aws sts get-caller-identity &> /dev/null; then
     echo -e "${RED}Error: AWS credentials not configured properly${NC}"
     echo -e "${YELLOW}Run: aws configure${NC}"
@@ -26,8 +26,20 @@ fi
 echo -e "${GREEN}✓ AWS credentials valid${NC}"
 echo ""
 
-# Step 2: Get CloudFront distribution ID if not set
-echo -e "${BLUE}[2/5] Finding CloudFront distribution...${NC}"
+# Step 2: Install dependencies
+echo -e "${BLUE}[2/6] Installing dependencies...${NC}"
+npm ci
+echo -e "${GREEN}✓ Dependencies installed${NC}"
+echo ""
+
+# Step 3: Build Next.js
+echo -e "${BLUE}[3/6] Building Next.js site...${NC}"
+npm run build
+echo -e "${GREEN}✓ Build complete${NC}"
+echo ""
+
+# Step 4: Get CloudFront distribution ID if not set
+echo -e "${BLUE}[4/6] Finding CloudFront distribution...${NC}"
 CLOUDFRONT_DIST_ID=$(aws cloudfront list-distributions \
     --query "DistributionList.Items[?Origins.Items[?contains(DomainName, '$BUCKET_NAME')]].Id | [0]" \
     --output text 2>/dev/null || echo "")
@@ -39,38 +51,30 @@ else
 fi
 echo ""
 
-# Step 3: Sync files to S3
-echo -e "${BLUE}[3/5] Syncing files to S3...${NC}"
-aws s3 sync . s3://$BUCKET_NAME/ \
+# Step 5: Sync files to S3
+echo -e "${BLUE}[5/6] Syncing to S3...${NC}"
+aws s3 sync out/ s3://$BUCKET_NAME/ \
     --region $REGION \
     --delete \
-    --exclude ".git/*" \
-    --exclude "deploy.sh" \
-    --exclude ".gitignore" \
-    --exclude "README.md" \
-    --exclude ".DS_Store" \
     --cache-control "max-age=300, public" \
     --metadata-directive REPLACE
 
-echo -e "${GREEN}✓ Files synced to S3${NC}"
-echo ""
-
-# Step 4: Set longer cache for static assets
-echo -e "${BLUE}[4/5] Optimizing cache headers for static assets...${NC}"
-if aws s3 ls s3://$BUCKET_NAME/favicon.ico &> /dev/null; then
-    aws s3 cp s3://$BUCKET_NAME/favicon.ico s3://$BUCKET_NAME/favicon.ico \
+# Set long cache for _next/ assets (immutable Next.js build files)
+if aws s3 ls s3://$BUCKET_NAME/_next/ &> /dev/null; then
+    aws s3 cp s3://$BUCKET_NAME/_next/ s3://$BUCKET_NAME/_next/ \
+        --recursive \
         --cache-control "max-age=31536000, public, immutable" \
         --metadata-directive REPLACE \
         &> /dev/null
-    echo -e "${GREEN}✓ Cache headers optimized for favicon.ico${NC}"
+    echo -e "${GREEN}✓ Files synced with optimized cache headers${NC}"
 else
-    echo -e "${YELLOW}Note: favicon.ico not found, skipping cache optimization${NC}"
+    echo -e "${GREEN}✓ Files synced to S3${NC}"
 fi
 echo ""
 
-# Step 5: Invalidate CloudFront cache
+# Step 6: Invalidate CloudFront cache
 if [ -n "$CLOUDFRONT_DIST_ID" ] && [ "$CLOUDFRONT_DIST_ID" != "None" ]; then
-    echo -e "${BLUE}[5/5] Creating CloudFront invalidation...${NC}"
+    echo -e "${BLUE}[6/6] Creating CloudFront invalidation...${NC}"
     INVALIDATION_ID=$(aws cloudfront create-invalidation \
         --distribution-id $CLOUDFRONT_DIST_ID \
         --paths "/*" \
@@ -80,7 +84,7 @@ if [ -n "$CLOUDFRONT_DIST_ID" ] && [ "$CLOUDFRONT_DIST_ID" != "None" ]; then
     echo -e "${GREEN}✓ CloudFront invalidation created: $INVALIDATION_ID${NC}"
     echo -e "${BLUE}Note: Invalidation may take 1-2 minutes to complete${NC}"
 else
-    echo -e "${BLUE}[5/5] Skipping CloudFront invalidation (no distribution found)${NC}"
+    echo -e "${BLUE}[6/6] Skipping CloudFront invalidation (no distribution found)${NC}"
 fi
 echo ""
 
